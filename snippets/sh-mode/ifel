@@ -1,0 +1,8 @@
+# name: if ... else ... fi
+# key: ifel
+# --
+if $1 ; then
+$0
+else
+
+fi

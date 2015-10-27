@@ -1,0 +1,6 @@
+# name: it "" do ... end
+# key: it
+# --
+it "$1" do
+  $0
+end

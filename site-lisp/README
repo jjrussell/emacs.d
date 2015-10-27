@@ -1,0 +1,3 @@
+I used to put downloaded emacs packages in here but ELPA has completely replaced that.
+There is some code in init.el to load packages that are put here so I figured I'd leave it
+around just in case.

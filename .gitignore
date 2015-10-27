@@ -1,0 +1,13 @@
+ac-comphist.dat
+ido.last
+*.elc
+projectile-bookmarks.eld
+recentf
+smex-items
+url/*
+var/*
+.cask
+.edbi-ds-history
+.emacs.desktop
+elpa
+

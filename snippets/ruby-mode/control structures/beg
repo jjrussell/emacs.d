@@ -1,0 +1,8 @@
+# name: begin ... rescue ... end
+# key: beg
+# --
+begin
+  $0
+rescue
+
+end

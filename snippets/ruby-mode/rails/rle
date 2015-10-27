@@ -1,0 +1,4 @@
+# name: rails_logger
+# key: rel
+# --
+Rails.logger.error "#{self} --> $0"
