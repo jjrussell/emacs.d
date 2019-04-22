@@ -17,6 +17,7 @@
 	hungry-delete-forward
 	indent-for-tab-command
 	indent-new-comment-line
+	insert-short-date
 	isearch-exit
 	isearch-printing-char
 	jjr-end
@@ -24,7 +25,11 @@
 	kill-visual-line
 	markdown-exdent-or-delete
 	match-paren
+	my-end
+	my-home
+	my-open-line
 	org-delete-char
+	org-end-of-line
 	org-kill-line
 	py-indent-line
 	ruby-electric-bar
@@ -35,6 +40,7 @@
 	ruby-interpolation-insert
 	sh-assignment
 	smart-tab
+	undefined
 	yaml-electric-dash-and-dot
 	))
 
@@ -47,4 +53,6 @@
 	pager-row-down
 	projectile-find-file
 	select-window-2
+	text-zoom-default
+	text-zoom-out
 	))

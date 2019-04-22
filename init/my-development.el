@@ -7,6 +7,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(global-aggressive-indent-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -37,8 +38,6 @@
 
 (global-set-key [(control x) (meta e)] 'ecb-minor-mode) ;; on/off switch
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; git support
@@ -54,6 +53,35 @@
   (egg-status nil t)
   (delete-other-windows)
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Go
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+(defun my-go-mode-hook ()
+  ;; Call Gofmt before saving                                                    
+  (add-hook 'before-save-hook 'gofmt-before-save)
+  (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)
+  ;; Godef jump key binding                                                      
+  ;; godef requires go get github.com/rogpeppe/godef
+  (local-set-key (kbd "M-.") 'godef-jump)
+  (flycheck-mode)
+
+  (set (make-local-variable 'company-backends) '(company-go))
+  (company-mode)
+  
+  (setq compile-command "go build -v && go test -v && go vet")
+  (define-key (current-local-map) "\C-c\C-c" 'compile)
+  (go-eldoc-setup)
+  (setq gofmt-command "goimports")
+
+  ;; for some reason GOPATH isn't getting caught when this runs in
+  ;; init.el
+  (exec-path-from-shell-initialize)
+  )
+
+(add-hook 'go-mode-hook 'my-go-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -85,8 +113,25 @@
 
   (local-set-key "\r" 'newline-and-indent)
   (flymake-ruby-load)
-  (add-to-list 'ac-sources 'ac-source-etags)
+  
+  (ac-etags-setup)
+  (ac-etags-ac-setup)
+  ;; emacs ruby mode defaut is global but (default) is the default in rvm now
+  (setq rvm--gemset-default "(default)")
+
+  (defadvice rspec-compile (around rspec-compile-around)
+    "Use BASH shell for running the specs because of ZSH issues."
+    (let ((shell-file-name "/bin/bash"))
+      ad-do-it))
+
+  (ad-activate 'rspec-compile)
+
+  ;; bundle exec for some reason doesn't pick up the same bundle as bundle installed on the
+  ;; command line, however modern versions of rvm just pick it up without the bundle exec
+  ;; command so leave it off and it all works fine. 
+  (setq rspec-use-bundler-when-possible nil)
   )
+
 
 ;; Set emacs environment to use the default rvm ruby
 (rvm-use-default)
@@ -112,9 +157,9 @@ Dependent gems:
         (let* ((default-directory project-root)
                ;;(ripper-tags-executable (concat (getenv "HOME") "/.rvm/bin/rvm " default-ruby-version " do ripper-tags"))
                (ripper-tags-executable "rvm default do ripper-tags")
-               (ruby-tags-command (concat "BUNDLE_GEMFILE='' " ripper-tags-executable " -R --exclude=db/migrate --tag-file=TAGS"))
+               (ruby-tags-command (concat "BUNDLE_GEMFILE='' " ripper-tags-executable " -R --exclude=db/migrate --exclude=db --exclude=vendor --exclude=lib/one_offs --exclude=spec --tag-file=TAGS"))
                )
-          (message (concat "Updating tags file in " project-root))
+          (message (concat "Updating tags file in " project-root " with command " ruby-tags-command))
           (call-process-shell-command (concat ruby-tags-command "&") nil 0)
           ;;same command but use this instead to debug any problems as output goes to a buffer
                                         ;(async-shell-command ruby-tags-command nil)
@@ -243,21 +288,43 @@ Dependent gems:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Javascript Mode
+;; Relevant packages
+;; js2-mode - fancier JS editor
+;; rjsx-mode - built on js2-mode with JSX support. Use this instead
+;; js2-refactor - refactoring
+;; xref-js2 - tagging and searching
+;; https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun my-js-mode-hook ()
-  (setq js-indent-level 2)
-  (set-indent))
 
-;; requires jslint and jsonlint
-;; (add-hook 'json-mode-hook 'flymake-json-load)
-;; (add-hook 'js-mode-hook 'flymake-jslint-load)
-(add-hook 'js-mode-hook 'my-js-mode-hook)
-(autoload 'js-mode "js" "JavaScript mode" t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js-mode))
+(add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
 (add-to-list 'auto-mode-alist '("\\.json$" . json-mode))
 
+(add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+(add-hook 'js2-mode-hook #'js2-refactor-mode)
 
+;; js-mode which js2 is based on binds "M-." which conflicts with xref, so
+;; unbind it.
+(eval-after-load 'rjsx-mode
+  '(progn
+     (js2r-add-keybindings-with-prefix "C-c C-r")
+     (define-key js2-mode-map [(control k)] #'js2r-kill)
+
+     (add-hook 'js2-mode-hook (lambda ()
+                                (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
+
+     (add-hook 'rjsx-mode-hook (lambda ()
+                                 (add-node-modules-path)
+                                 (setenv "PATH" (mapconcat 'identity exec-path ":"))))
+     (require 'prettier-js)
+     (add-hook 'rjsx-mode-hook #'prettier-js-mode)
+     (add-hook 'rjsx-mode-hook #'js2-highlight-vars-mode)
+
+     
+     (define-key js-mode-map [(meta .)] 'js2-jump-to-definition) ; better than xref-find-definitions in JS
+     (define-key js-mode-map (kbd "≥") 'js2-jump-to-definition) ; alt-. on mac. Duplicate to be consistent with intellij
+     (define-key js-mode-map [(control meta .)] 'xref-find-definitions) ; backup to js2-jump-to-definition
+     )) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Coffee script Mode
@@ -270,8 +337,6 @@ Dependent gems:
   ;; (set-indent)
   )
 (add-hook 'coffee-mode-hook 'my-coffee-script-mode-hook)
-
-;; (add-hook 'coffee-mode-hook 'flymake-coffee-load)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -288,7 +353,7 @@ Dependent gems:
 ;; EJS templates multi-mode
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                        ;(require 'mmm-auto)
+;;(require 'mmm-auto)
 
 (defun my-mmm-auto-mode-hook ()
   (interactive)

@@ -3,30 +3,30 @@
 ;; Personal variables paths and stuff
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; External programs
-;; My own terminal script wrapper for xplatform terminal fun
-(setq my-terminal-program "my-terminal")
-(setq my-terminal-program-args nil)
-
-;; My own terminal script wrapper for xplatform file browsing fun
-(setq my-filemanager-progam "my-file-browser")
-
 ;; set root of personal emacs repository and common directories used
 ;; in functions and other variables below
-(setq user-emacs-directory (expand-file-name ".emacs.d" "~")
-      my-emacs-init-dir (expand-file-name "init" user-emacs-directory)
-      my-site-lisp-dir (expand-file-name "site-lisp" user-emacs-directory)
+(defconst user-emacs-directory (expand-file-name ".emacs.d" "~"))
+(defconst my-emacs-init-dir (expand-file-name "init" user-emacs-directory))
+(defconst my-site-lisp-dir (expand-file-name "site-lisp" user-emacs-directory))
 
-      ;;Place where local stuff is kept e.g. desktop definitions
-      my-emacs-local-store (expand-file-name ".emacs.local" "~"))
+(defconst my-emacs-local-store (expand-file-name ".emacs.local" "~") "Place where local stuff is kept e.g. desktop definitions")
+(defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory) "Junk place for auto-save files")
+
+;; External programs
+;; My own terminal script wrapper for xplatform terminal fun
+(defconst my-terminal-program "my-terminal" "what command to execute to get a terminal")
+(defconst my-terminal-program-args nil)
+
+;; My own terminal script wrapper for xplatform file browsing fun
+(defconst my-filemanager-progam "jjr-file-browser" "My own terminal script wrapper for xplatform file browsing fun.")
 
 
 ;; Just in case these directories aren't there yet create them.
 ;; If localstore doesn't exsist emacs won't exit correctly, which is really annoying
-(mapcar (lambda (dir) (make-directory dir t))
-        (list user-emacs-directory
-              my-emacs-local-store
-              (expand-file-name  "semantic.cache" my-emacs-local-store)))
+(mapc (lambda (dir) (make-directory dir t))
+      (list user-emacs-directory
+            my-emacs-local-store
+            (expand-file-name  "semantic.cache" my-emacs-local-store)))
 
 ;; put the buffer name in the frame title
 ;; system-name returns the FIRST name for 127.0.0.1 in /etc/hosts
@@ -38,9 +38,9 @@
 ;; System Checks
 ;;Are we on UNIX?
 (setq my-unixp (or (eq system-type 'gnu/linux)
-                    (eq system-type 'linux)
-                    (eq system-type 'darwin)
-                    (eq system-type 'usg-unix-v))) ; solaris, blargh
+                   (eq system-type 'linux)
+                   (eq system-type 'darwin)
+                   (eq system-type 'usg-unix-v))) ; solaris, blargh
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -77,9 +77,8 @@
 
 (setq-default indent-tabs-mode nil)     ; use spaces instead of tabs #flameon
 (setq
- x-select-enable-clipboard t ; use native clipboard for yanking
+ select-enable-clipboard t ; use native clipboard for yanking
  font-use-system-font t
- make-backup-files nil            ; no annoying ~files
  ring-bell-function 'ignore     ; Blessed silence
  query-replace-highlight t
  completion-ignore-case t               ;ignore case on completions
@@ -91,8 +90,6 @@
  next-line-add-newlines nil ; adds new lines to the end of buffers
  mouse-yank-at-point t          ; yank at point, not at click, but who uses the mouse anyway?
  yank-at-point t               ; yank at point, not where the mouse is
- auto-save-directory (concat my-emacs-local-store "/auto-save-list")
- auto-save-list-file-prefix ".saves-"
  parens-require-spaces nil ; no whitespace padding around parens
  ns-pop-up-frames nil ; don't open new frames when the OS uses emacs to open a file
  confirm-kill-emacs 'y-or-n-p ; prompt to exit
@@ -102,6 +99,14 @@
 ;;(setq x-super-keysym 'meta)
 
 (electric-indent-mode 1) ; global minor mode for auto indent on newline
+
+;; death to all temp files https://www.emacswiki.org/emacs/AutoSave
+(setq backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+(setq auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t)))
+(setq auto-save-list-file-prefix emacs-tmp-dir)
+;; old variable. Still needed 2019-01-04 
+;; auto-save-directory (concat my-emacs-local-store "/auto-save-list")
+;; auto-save-list-file-prefix ".saves-"
 
 ;; pretty font colors
 (require 'font-lock)
@@ -180,6 +185,7 @@
 (define-key global-map [(meta r)] 'replace-string)
 (define-key global-map [(meta g)] 'goto-line)
 (define-key global-map [(control x)(meta f)] 'find-file-at-point)
+(define-key my-prefix-map [(control e)] 'edebug-defun)
 (define-key my-prefix-map "t" 'org-capture)
 ; (define-key my-prefix-map "t" 'whitespace-cleanup)
 (define-key my-prefix-map "k" 'scroll-bar-mode)
@@ -192,7 +198,8 @@
                                (insert-tab))) ; Control-C TAB as a vector
 (define-key global-map [(control shift k)] 'kill-this-buffer)
 
-(define-key global-map [(control x)(^)] 'join-line)
+;; vscode/sublime keybinding and behavior
+(define-key global-map [(control j)] (lambda () (interactive) (join-line t)))
 
 (define-key my-prefix-map "b" 'browse-url-at-point)
 (define-key my-prefix-map "R"
@@ -263,6 +270,7 @@
 (add-to-list 'auto-mode-alist '("httpd.conf" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.ds" . lisp-mode)) ; devilspie config
 (add-to-list 'auto-mode-alist '("\\.md" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.log" . text-mode)) ;; 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -282,22 +290,22 @@
 ;; Add any of those directories to the load path
 ;; This is mostly superceded by ELPA packages now.
 (cond ((file-directory-p my-site-lisp-dir)
-       (mapcar (lambda (load-path-dir)
-                 (let ((site-lisp-entry-nolisp (expand-file-name
-                                                load-path-dir
-                                                my-site-lisp-dir))
-                       (site-lisp-entry-lisp (expand-file-name
-                                              (concat load-path-dir "/lisp")
-                                              my-site-lisp-dir)))
+       (mapc (lambda (load-path-dir)
+               (let ((site-lisp-entry-nolisp (expand-file-name
+                                              load-path-dir
+                                              my-site-lisp-dir))
+                     (site-lisp-entry-lisp (expand-file-name
+                                            (concat load-path-dir "/lisp")
+                                            my-site-lisp-dir)))
 
-                   (if (file-directory-p site-lisp-entry-lisp)
-                       ;;then
-                       (add-to-list 'load-path site-lisp-entry-lisp)
-                     ;;else just add the directory
-                     (add-to-list 'load-path site-lisp-entry-nolisp))
-                   ))
-               (directory-files my-site-lisp-dir nil "^\\w")
-               )
+                 (if (file-directory-p site-lisp-entry-lisp)
+                     ;;then
+                     (add-to-list 'load-path site-lisp-entry-lisp)
+                   ;;else just add the directory
+                   (add-to-list 'load-path site-lisp-entry-nolisp))
+                 ))
+             (directory-files my-site-lisp-dir nil "^\\w")
+             )
        ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -307,17 +315,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; make packages avaialble during init. By default they are loaded after init.el loads
-(package-initialize)
+;; define custom package archives here so they are available when we call package-initialize
+(setq package-archives
+      (quote
+       (("gnu" . "http://elpa.gnu.org/packages/")
+        ("melpa-stable" . "http://melpa-stable.milkbox.net/packages/")
+        ("melpa" . "http://melpa.milkbox.net/packages/"))))
+
+;;(package-initialize)
 
 ;; Make sure that this list of packages are always installed. 
 (when (not package-archive-contents)
   (package-refresh-contents))
-(defvar my-packages  '(ac-etags ack ack-and-a-half ag anything async auto-complete auto-indent-mode autopair bm browse-kill-ring buffer-move bundler coffee-mode col-highlight color-identifiers-mode color-theme color-theme-sanityinc-solarized company concurrent crontab-mode csv-mode ctable dash dash-functional deferred dired-single duplicate-thing ecb edit-server egg enh-ruby-mode ensime epc epl etags-table exec-path-from-shell expand-region f find-file-in-project findr floobits flx flx-ido flycheck flycheck-pyflakes flymake flymake-coffee flymake-cursor flymake-easy flymake-go flymake-jslint flymake-json flymake-python-pyflakes flymake-ruby flymake-sass flymake-shell fold-dwim fold-this fuzzy gh gist git-commit-mode git-rebase-mode git-timemachine github-browse-file gmail-message-mode go-autocomplete go-mode groovy-mode ham-mode haml-mode helm helm-themes highlight html-to-markdown hungry-delete ibuffer-vc ido-ubiquitous ido-vertical-mode idomenu imenu-anywhere inf-ruby inflections ioccur jira json-mode json-reformat json-snatcher jump key-chord kill-ring-search let-alist logito lua-mode magit magit-filenotify magit-find-file magit-gh-pulls magit-gh-pulls magit-log-edit markdown-mode+ markdown-mode mmm-mode multiple-cursors osx-plist pager pcache persp-projectile perspective pkg-info popup pos-tip projectile projectile-rails python-mode rake rbenv real-auto-save rinari robe rsense rspec-mode ruby-block ruby-compilation ruby-end ruby-interpolation ruby-tools rvm s sbt-mode scala-mode2 scss-mode smart-tab smex sr-speedbar tabulated-list toggle-quotes undo-tree vertica visual-fill-column vline wgrep window-numbering writeroom-mode xml-rpc yafolding yaml-mode yasnippet )
+(defvar my-packages  '(ac-etags ack ack-and-a-half ag anything async auto-complete auto-indent-mode autopair bm browse-kill-ring buffer-move bundler coffee-mode col-highlight color-identifiers-mode color-theme color-theme-sanityinc-solarized company concurrent crontab-mode csv-mode ctable dash dash-functional deferred dired-single duplicate-thing ecb edit-server egg embrace enh-ruby-mode ensime epc epl etags-table exec-path-from-shell expand-region f findr floobits flx flx-ido flycheck flycheck-pyflakes flymake flymake-coffee flymake-easy flymake-go flymake-jslint flymake-json flymake-python-pyflakes flymake-ruby flymake-sass flymake-shell fold-dwim fold-this fuzzy gh gist git-commit-mode git-rebase-mode git-timemachine github-browse-file gmail-message-mode go-autocomplete go-mode groovy-mode ham-mode haml-mode helm helm-themes highlight html-to-markdown hungry-delete ibuffer-vc ido-ubiquitous ido-vertical-mode idomenu imenu-anywhere inf-ruby inflections ioccur jira json-mode json-reformat json-snatcher jump key-chord kill-ring-search let-alist logito lua-mode magit magit-filenotify magit-find-file magit-gh-pulls magit-gh-pulls magit-log-edit markdown-mode+ markdown-mode mmm-mode multiple-cursors osx-plist pager pcache persp-projectile perspective pkg-info popup pos-tip projectile projectile-rails python-mode rake rbenv real-auto-save rinari robe rsense rspec-mode ruby-block ruby-compilation ruby-end ruby-interpolation ruby-tools rvm s sbt-mode scala-mode2 scss-mode smart-tab smex sr-speedbar tabulated-list toggle-quotes undo-tree vertica visual-fill-column vline wgrep window-numbering writeroom-mode xml-rpc yafolding yaml-mode yasnippet sql-indent)
   "List of all packages used in my config. The code below will check to make sure all of these are installed before continuing. This keeps me from having to commit all my elpa packages to my own emacs git repo. 
 Found on https://news.ycombinator.com/item?id=5459921"
   )
 (dolist (p my-packages)
   (when (not (package-installed-p p))
+    (message (format "installing %s" p))
     (package-install p)))
 
 
@@ -326,8 +342,6 @@ Found on https://news.ycombinator.com/item?id=5459921"
 
 ;; Load programming language modes and heavier dev tools
 (require 'my-development)
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -365,7 +379,7 @@ Found on https://news.ycombinator.com/item?id=5459921"
 
        ;; OSX. Mostly a unix, but still needs some help
        (cond ((eq system-type 'darwin)
-                 
+              
               ;; actually makes the command key behave on the mac. Its awesome
               ;; most of this good stuff is found at
               ;; http://lojic.com/blog/2010/03/17/switching-from-carbonemacs-to-emacs-app/
@@ -391,7 +405,7 @@ Found on https://news.ycombinator.com/item?id=5459921"
 
               ;; I want this back to switch between emacs windows
               ;; it was mapped to tmm-menubar.  Whatever
-              (global-unset-key [?\M-`])
+              (global-set-key [?\M-`] 'other-frame)
 
               ;; if emacs is launched from spotlight or quicksilver it gets the
               ;; default-directory / which is useless. Set it to home.
@@ -415,14 +429,6 @@ Found on https://news.ycombinator.com/item?id=5459921"
 
        (if (boundp 'w32-quote-process-args)
            (setq w32-quote-process-args ?\"))
-       ;; Start gnuserv if available for reuse of one emacs window
-       (setq server-program
-             (expand-file-name "gnuserv/gnuserv.exe" my-site-lisp-dir))
-
-       (cond ((file-readable-p server-program)
-              (require-try 'gnuserv)
-              (gnuserv-start)
-              (setq gnuserv-frame (selected-frame))))
        ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -576,7 +582,7 @@ key to which this function is bound.  Usually '%'."
     (beginning-of-line)
     (open-line 1))
   ;; condition is for correctly handling blank lines
-  (if (not (eq cc 0)) (previous-line))
+  (if (not (eq cc 0)) (forward-line -1))
   (dotimes (number cc)
     (insert " "))
   )
@@ -625,7 +631,7 @@ Found in comment of http://endlessparentheses.com/implementing-comment-line.html
   (if (region-active-p)
       (comment-dwim arg)
     (comment-or-uncomment-region (line-beginning-position) (line-end-position)))
-  (next-line))
+  (forward-line))
 (global-set-key (kbd "M-;") #'toggle-comment-on-line-or-region)
 
 (defun my-comment-block (&optional arg)
@@ -671,8 +677,8 @@ Found in comment of http://endlessparentheses.com/implementing-comment-line.html
          (setq c-syntactic-indentation c-syntactic-indentation-old)))
 
   (cond ((not arg)
-         (previous-line 1)))
-  (previous-line 1)
+         (forward-line -1)))
+  (forward-line -1)
   (end-of-line)
   (insert " "))
 
@@ -754,7 +760,6 @@ Don't mess with special buffers."
   (beginning-of-line)
   (let ((beg (point))) (forward-line 1) (fill-region beg (point)))
   (register-to-point 'iwdw-register))
-(define-key global-map [(meta p)] 'fill-line)
 
 (defun unwrap-line ()
   "Remove all newlines until we get to two consecutive ones.
@@ -868,18 +873,19 @@ Repeated invocations toggle between the two most recently open buffers."
 clean-buffer-list.  If called with an ARG, then cleans up buffers specified
 by the regexs in clean-buffers-extended-list."
   (interactive "P")
-  (mapcar '(lambda (buffer)
-             (let ((buffer (buffer-name buffer)))
-               (mapcar '(lambda (re)
-                          (if (string-match re buffer)
-                              (progn
-                                (message "Deleting %s" buffer)
-                                (kill-buffer buffer))))
-                       (append clean-buffer-list
-                               (if arg
-                                   clean-buffer-extended-list
-                                 nil)))))
+  (mapcar (lambda (buffer)
+            (let ((buffer (buffer-name buffer)))
+              (mapcar (lambda (re)
+                        (if (string-match re buffer)
+                            (progn
+                              (message "Deleting %s" buffer)
+                              (kill-buffer buffer))))
+                      (append clean-buffer-list
+                              (if arg
+                                  clean-buffer-extended-list
+                                nil)))))
           (buffer-list)))
+
 ;; regular expressions of buffers to clean up
 (setq clean-buffer-list '("sent \\(reply\\)\\|\\(mail\\) to" "Completions" "\\*Help\\*" "\\*Apropos\\*" "\\*compilation\\*" "\\*Compile-log*" "\\*Customize*" "\\*Backtrace\\*" "\\*Saved Directories Menu*" "\\*Ediff Registry*" "\\*Desktop Menu*" "\\*sawfish*" "\\*Shell Command Output*" "\\*dired*" "\\*grep\\*" "\\*info\\*" "\\*Occur*" "\\*mail\\*" "\\*tramp*" "\\*doc\\*" "\\*spurious\\*"))
 (defvar clean-buffer-extended-list '("*Manual-")
@@ -925,6 +931,15 @@ fail with a message and continue if some aren't available"
       (file-error
        (progn (message "Couldn't load extension: %s" lib) nil)))))
 
+;; Reopen the last killed buffer
+;; Source: https://stackoverflow.com/questions/10394213/emacs-reopen-previous-killed-buffer
+(defun undo-kill-buffer ()
+  (interactive)
+  (let ((active-files (loop for buf in (buffer-list)
+                            when (buffer-file-name buf) collect it)))
+    (loop for file in recentf-list
+          unless (member 'file active-files) return (find-file 'file))))
+
 (defun my-reopen-file ()
   "Try to load the lisp code in the current buffer."
   (interactive)
@@ -943,12 +958,6 @@ fail with a message and continue if some aren't available"
          (set-variable 'truncate-partial-width-windows t))))
 
 (define-key my-prefix-map "n" 'my-truncate-toggle)
-
-(defun my-hs-hide-level-1 ()
-  (interactive)
-  (hs-hide-level 1)
-  (forward-sexp 1))
-(setq hs-hide-all-non-comment-function 'my-hs-hide-level-1)
 
 (defun my-init-flyspell ()
   (interactive)
@@ -1034,7 +1043,7 @@ With prefix arg HIDDEN-BUFS-TOO, show lines matching in all buffers."
   (interactive)
   (set-buffer (get-buffer-create "*faces colors rgb*"))
   (setq truncate-lines t)
-  (toggle-read-only -1)
+  (read-only-mode -1)
   (let ((f)
         (c)
         (rgb))
@@ -1078,7 +1087,7 @@ With prefix arg HIDDEN-BUFS-TOO, show lines matching in all buffers."
       (insert "\n")))
   (switch-to-buffer "*faces colors rgb*")
   (delete-trailing-whitespace)
-  (toggle-read-only 1)
+  (read-only-mode 1)
   (goto-char (point-min)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1199,92 +1208,6 @@ file of a buffer in an external program."
          (kill-buffer (current-buffer)))))
 (define-key my-prefix-map [(control k)] 'my-delete-file-of-buffer)
 
-                                                             
-                                                             
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Printing Functions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun my-print-buffer-code (&optional filename)
-  "Print buffer with settings for printing code."
-  (interactive (list (ps-print-preprint current-prefix-arg)))
-  (setq ps-landscape-mode nil           ; landscape mode
-        ps-number-of-columns 1
-        ps-n-up-printing 4              ;n sheets per page
-        ps-n-up-border-p nil ; draw a border around each sheet on a page
-        ps-line-number t                ; print line numbers
-        ps-line-number-step 5           ; number every nth line
-        ps-line-number-color 0 ;print numbers in gretscale n, 0 is balck
-        ps-spool-duplex t               ;print on both sides
-        ps-left-header (quote (ps-get-buffer-name))
-        ps-right-header (quote ("/pagenumberstring load"
-                                ps-time-stamp-mon-dd-yyyy))
-        ps-print-header t               ; print headers
-        )
-  (ps-print-buffer filename)
-  (if filename
-      (message (concat "Buffer written to " filename))
-    (message "Buffer printed with code settings")))
-
-(defun my-print-buffer-plain (&optional filename)
-  "Print buffer with settings for printing plain pages."
-  (interactive (list (ps-print-preprint current-prefix-arg)))
-  (setq ;;page layout
-   ps-number-of-columns 1
-   ps-n-up-printing 1                   ;n sheets per page
-   ps-spool-duplex nil                  ; don't pad with extra pages
-   ps-n-up-border-p nil     ;draw a border around each sheet on a page
-   ps-landscape-mode nil                ; landscape mode
-
-   ;; print line numbers
-   ps-line-number nil
-   ps-line-number-step 5                ; number every nth line
-   ps-line-number-color 0    ;print numbers in gretscale n, 0 is balck
-
-   ;; print headers
-   ps-print-header nil
-   ps-left-header (quote (ps-get-buffer-name))
-   ps-right-header (quote ("/pagenumberstring load"
-                           ps-time-stamp-mon-dd-yyyy))
-   )
-  (ps-print-buffer filename)
-  (if filename
-      (message (concat "Buffer written to " filename))
-    (message "Buffer printed with plain settings")))
-
-(defun my-print-buffer-plain-header (&optional filename)
-  "Print buffer with settings for printing plain pages with header."
-  (interactive (list (ps-print-preprint current-prefix-arg)))
-  (setq ps-spool-duplex t               ;print on both sides
-        ;;page layout
-        ps-number-of-columns 1
-        ps-n-up-printing 1              ;n sheets per page
-        ps-spool-duplex nil             ; don't pad with extra pages
-        ps-n-up-border-p nil ;draw a border around each sheet on a page
-        ps-landscape-mode nil           ; landscape mode
-
-        ;; print line numbers
-        ps-line-number nil
-        ps-line-number-step 5           ; number every nth line
-        ps-line-number-color 0 ;print numbers in gretscale n, 0 is balck
-
-        ;; print headers
-        ps-print-header t
-        ps-left-header (quote (ps-get-buffer-name))
-        ps-right-header (quote ("/pagenumberstring load"
-                                ps-time-stamp-mon-dd-yyyy))
-        )
-  (ps-print-buffer filename)
-  (if filename
-      (message (concat "Buffer written to " filename))
-    (message "Buffer printed with plain header settings")))
-
-(define-key my-prefix-map [(p) (p)] 'my-print-buffer-plain)
-(define-key my-prefix-map [(p) (c)] 'my-print-buffer-code)
-(define-key my-prefix-map [(p) (h)] 'my-print-buffer-plain-header)
-(define-key my-prefix-map [(p) (z)]
-  (lambda () (interactive)
-    (my-print-buffer-plain-header"~/z.ps")))
-
 ;; this doesn't appear to work on the mac. Maybe on linux? Found it here
 ;; http://www.emacswiki.org/emacs/EdiffMode#toc1
 (defun command-line-diff (switch)
@@ -1293,24 +1216,6 @@ file of a buffer in an external program."
     (ediff file1 file2)))
 (add-to-list 'command-switch-alist '("-diff" . command-line-diff))
 (add-to-list 'command-switch-alist '("diff" . command-line-diff))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Code folding
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun my-hs-mode-hook ()
-  (define-key global-map [(control c) (control s)] 'hs-toggle-hiding)
-  )
-(add-hook 'hs-minor-mode-hook 'my-hs-mode-hook)
-
-(defun my-hs-toggle-hiding ()
-  "Check to see if we need to activate hs-minor-mode first."
-  (interactive)
-  (if (not (fboundp 'hs-toggle-hiding))
-      (hs-minor-mode))
-  (hs-toggle-hiding))
-(define-key my-prefix-map [(h)] 'my-hs-toggle-hiding)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1326,9 +1231,9 @@ file of a buffer in an external program."
          (setq my-face-default-height (face-attribute 'default :height))
          ))
   (let ((new-height (+ (face-attribute 'default :height) 10)))
-        (set-face-attribute 'default nil :height new-height)
-        (message (concat "New font size set to " (number-to-string new-height)))
-      )
+    (set-face-attribute 'default nil :height new-height)
+    (message (concat "New font size set to " (number-to-string new-height)))
+    )
   )
 (defun text-zoom-out ()
   "Zoom out all text"
@@ -1401,42 +1306,45 @@ won't parse the buffer."
  '(ac-etags-requires 1)
  '(ac-use-fuzzy t)
  '(ack-and-a-half-arguments
-   (quote
-    ("--ignore-dir=vendor" "--ignore-dir=log" "--column" "--context")))
+   '("--ignore-dir=vendor" "--ignore-dir=log" "--column" "--context"))
  '(ack-and-a-half-executable "/usr/local/bin/ag")
  '(ack-and-a-half-prompt-for-directory t t)
  '(ag-arguments
-   (quote
-    ("--context" "--ignore-dir=log" "--ignore-dir=vendor" "--all-text" "--smart-case" "--nogroup" "--column" "--")))
+   '("--context" "--ignore-dir=log" "--ignore-dir=vendor" "--all-text" "--smart-case" "--nogroup" "--column" "--"))
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
  '(ansi-color-names-vector
    (vector "#839496" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#002b36"))
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
-   (quote
-    (compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil)))
+   '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
  '(auto-indent-global-mode t nil (auto-indent-mode))
+ '(auto-indent-on-yank-or-paste nil)
  '(auto-indent-untabify-on-visit-file t)
  '(auto-save-timeout 30)
  '(auto-save-visited-file-name nil)
+ '(beacon-color "#d54e53")
  '(bookmark-automatically-show-annotations nil)
  '(bookmark-default-file "~/.emacs.local/emacs.bmk")
  '(bookmark-save-flag 0)
  '(bookmark-use-annotations nil)
  '(bs-max-window-height 30)
  '(canlock-password "e0f10ec3fe2e8bcd3d1b789cfcad28b660ba3672")
- '(clearcase-checkout-arguments (quote ("-unr")))
+ '(clearcase-checkout-arguments '("-unr"))
  '(clearcase-checkout-switches "-unr")
  '(clearcase-diff-on-checkin t)
  '(clearcase-use-normal-diff t)
  '(coffee-tab-width 2)
- '(color-theme-legal-frame-parameters "\\(color\\|mode\\|font\\|height\\|width\\)$")
+ '(color-theme-legal-frame-parameters "\\(color\\|mode\\)$")
  '(column-highlight-mode nil)
  '(comment-auto-fill-only-comments t)
+ '(company-backends
+   '(company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode company-cmake company-capf
+                  (company-dabbrev-code company-gtags company-etags company-keywords)
+                  company-oddmuse company-files company-dabbrev))
+ '(company-idle-delay 0.5)
  '(completion-ignored-extensions
-   (quote
-    (".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".fasl" ".ufsl" ".fsl" ".dxl" ".pfsl" ".dfsl" ".p64fsl" ".d64fsl" ".dx64fsl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo" ".copyarea.db")))
+   '(".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".fasl" ".ufsl" ".fsl" ".dxl" ".pfsl" ".dfsl" ".p64fsl" ".d64fsl" ".dx64fsl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo" ".copyarea.db"))
  '(cperl-break-one-line-blocks-when-indent nil)
  '(cperl-continued-statement-offset 0)
  '(cperl-electric-keywords nil)
@@ -1461,37 +1369,35 @@ won't parse the buffer."
  '(cua-normal-cursor-color "green")
  '(cua-prefix-override-inhibit-delay 1)
  '(cua-read-only-cursor-color "red")
- '(custom-enabled-themes (quote (sanityinc-solarized-dark)))
+ '(custom-enabled-themes '(sanityinc-solarized-dark))
  '(custom-safe-themes
-   (quote
-    ("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" default)))
- '(desktop-path (quote ("~/.emacs.local/")))
+   '("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" default))
+ '(debug-on-error nil)
+ '(desktop-path '("~/.emacs.local/"))
  '(desktop-save t)
- '(desktop-save-mode t)
+ '(desktop-save-mode nil)
  '(diary-file (expand-file-name (concat my-emacs-init-dir "/diary")))
  '(directory-abbrev-alist nil)
  '(dired-find-subdir t)
  '(dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$\\|^\\..*")
- '(dired-recursive-deletes (quote top))
+ '(dired-recursive-deletes 'top)
  '(dired-view-command-alist
-   (quote
-    (("[.]ps\\'" . "gv -spartan -color")
+   '(("[.]ps\\'" . "gv -spartan -color")
      ("[.]pdf\\'" . "xpdf")
      ("[.]dvi\\'" . "xdvi -sidemargin 0.5 -topmargin 1")
      ("[.]doc\\'" . "winword")
-     ("[.]ppt\\'" . "powerpnt"))))
+     ("[.]ppt\\'" . "powerpnt")))
  '(dired-x-hands-off-my-keys nil)
  '(ecb-create-layout-file "~/.emacs.d/init/ecb-user-layouts.el")
- '(ecb-directories-menu-user-extension-function (quote ignore))
+ '(ecb-directories-menu-user-extension-function 'ignore)
  '(ecb-download-url "http://prdownloads.sourceforge.net/ecb/")
  '(ecb-excluded-directories-regexp "^\\(CVS\\|.\\|..\\)$")
- '(ecb-excluded-directories-regexps (quote ("^\\(\\.git\\|\\.sass-cache\\|\\.\\|\\.\\.\\)$")))
- '(ecb-fix-window-size (quote width))
- '(ecb-history-menu-user-extension-function (quote ignore))
+ '(ecb-excluded-directories-regexps '("^\\(\\.git\\|\\.sass-cache\\|\\.\\|\\.\\.\\)$"))
+ '(ecb-fix-window-size 'width)
+ '(ecb-history-menu-user-extension-function 'ignore)
  '(ecb-layout-name "left15")
  '(ecb-layout-window-sizes
-   (quote
-    (("my-ecb-layout-leftright"
+   '(("my-ecb-layout-leftright"
       (ecb-directories-buffer-name 0.23267326732673269 . 0.9821428571428571)
       (ecb-methods-buffer-name 0.23267326732673269 . 0.625)
       (ecb-history-buffer-name 0.23267326732673269 . 0.35714285714285715))
@@ -1511,165 +1417,178 @@ won't parse the buffer."
      ("left3"
       (ecb-directories-buffer-name 0.3016759776536313 . 0.29347826086956524)
       (ecb-sources-buffer-name 0.3016759776536313 . 0.34782608695652173)
-      (ecb-methods-buffer-name 0.3016759776536313 . 0.34782608695652173)))))
- '(ecb-major-modes-show-or-hide (quote (nil)))
- '(ecb-methods-menu-user-extension-function (quote ignore))
+      (ecb-methods-buffer-name 0.3016759776536313 . 0.34782608695652173))))
+ '(ecb-major-modes-show-or-hide '(nil))
+ '(ecb-methods-menu-user-extension-function 'ignore)
  '(ecb-options-version "2.40")
- '(ecb-primary-secondary-mouse-buttons (quote mouse-1--mouse-2))
- '(ecb-show-sources-in-directories-buffer (quote always))
- '(ecb-sources-menu-user-extension-function (quote ignore))
+ '(ecb-primary-secondary-mouse-buttons 'mouse-1--mouse-2)
+ '(ecb-show-sources-in-directories-buffer 'always)
+ '(ecb-sources-menu-user-extension-function 'ignore)
  '(ecb-tip-of-the-day nil)
  '(ecb-tip-of-the-day-file "~/.emacs.local/ecb-tip-of-day.el")
- '(ecb-toggle-layout-sequence (quote ("left15" "left7" "leftright1")))
- '(ecb-tree-incremental-search (quote substring))
+ '(ecb-toggle-layout-sequence '("left15" "left7" "leftright1"))
+ '(ecb-tree-incremental-search 'substring)
  '(ecb-tree-indent 2)
- '(ecb-tree-truncate-lines
-   (quote
-    (ecb-directories-buffer-name ecb-methods-buffer-name)))
- '(ecb-use-speedbar-instead-native-tree-buffer (quote nil))
- '(ecb-wget-setup (quote cons))
+ '(ecb-tree-truncate-lines '(ecb-directories-buffer-name ecb-methods-buffer-name))
+ '(ecb-use-speedbar-instead-native-tree-buffer 'nil)
+ '(ecb-wget-setup 'cons)
  '(echo-keystrokes 0.1)
  '(ediff-diff-options "-w")
- '(ediff-split-window-function (quote split-window-horizontally))
- '(ediff-window-setup-function (quote ediff-setup-windows-plain))
+ '(ediff-split-window-function 'split-window-horizontally)
+ '(ediff-window-setup-function 'ediff-setup-windows-plain)
  '(eshell-directory-name "~/.emacs.local/eshell/")
  '(eshell-prefer-to-shell t nil (eshell))
  '(etags-table-search-up-depth 100)
+ '(exec-path-from-shell-check-startup-files nil)
  '(exec-path-from-shell-variables
-   (quote
-    ("PATH" "MANPATH" "LANG" "LC_CTYPE" "MY_ENG" "MY_ENV" "MY_EMAIL_PERSONAL" "MY_NAME")))
+   '("PATH" "MANPATH" "LANG" "LC_CTYPE" "MY_ENG" "MY_ENV" "MY_EMAIL_PERSONAL" "MY_NAME" "GOPATH"))
  '(fci-rule-color "#073642")
  '(file-coding-system-alist
-   (quote
-    (("\\.elc\\'" emacs-mule . emacs-mule)
+   '(("\\.elc\\'" emacs-mule . emacs-mule)
      ("\\(\\`\\|/\\)loaddefs.el\\'" raw-text . raw-text-unix)
      ("\\.reg\\'" utf-16-le . utf-16-le)
      ("\\.tar\\'" no-conversion . no-conversion)
-     ("" undecided))))
+     ("" undecided)))
  '(fill-column 100)
  '(flx-ido-mode t)
+ '(flycheck-color-mode-line-face-to-color 'mode-line-buffer-id)
  '(flymake-no-changes-timeout 10)
  '(flymake-start-syntax-check-on-newline nil)
- '(glasses-face (quote bold))
+ '(frame-background-mode 'dark)
+ '(github-browse-file-show-line-at-point t)
+ '(glasses-face 'bold)
  '(glasses-original-separator "")
  '(glasses-separate-parentheses-p nil)
  '(glasses-separator "")
- '(global-auto-complete-mode t)
+ '(global-auto-complete-mode nil)
  '(global-auto-revert-mode t)
- '(global-hungry-delete-mode t)
+ '(global-company-mode t)
+ '(global-hungry-delete-mode nil)
  '(global-smart-tab-mode t)
  '(global-subword-mode t)
  '(global-undo-tree-mode t)
  '(global-visual-line-mode t)
  '(grep-command "grep -2EInir ")
- '(grep-highlight-matches (quote auto-detect))
- '(grep-use-null-device (quote auto-detect))
+ '(grep-highlight-matches 'auto-detect)
+ '(grep-use-null-device 'auto-detect)
  '(help-window-select t)
  '(hippie-expand-try-functions-list
-   (quote
-    (yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill try-complete-lisp-symbol-partially try-complete-lisp-symbol)))
+   '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(icicle-mode t)
  '(icicle-show-Completions-initially-flag t)
- '(ido-create-new-buffer (quote prompt))
+ '(ido-create-new-buffer 'prompt)
  '(ido-enable-flex-matching t)
  '(ido-everywhere t)
  '(ido-max-file-prompt-width 0)
  '(ido-max-prospects 0)
  '(ido-max-window-height 20)
+ '(ido-use-faces t)
+ '(ido-use-filename-at-point 'guess)
+ '(ido-use-url-at-point t)
  '(ido-vertical-mode t)
  '(indent-tabs-mode nil)
  '(initial-scratch-message nil)
- '(jde-build-function (quote (jde-ant-build)))
+ '(jde-build-function '(jde-ant-build))
  '(jde-check-version-flag nil)
- '(jde-compile-option-classpath (quote (".")))
- '(jde-compile-option-debug (quote ("all" (t nil nil))))
- '(jde-compile-option-sourcepath (quote (".")))
- '(jde-complete-function (quote jde-complete-minibuf))
- '(jde-complete-signature-display (quote ("Eldoc")))
- '(jde-debugger (quote ("JDEbug")))
+ '(jde-compile-option-classpath '("."))
+ '(jde-compile-option-debug '("all" (t nil nil)))
+ '(jde-compile-option-sourcepath '("."))
+ '(jde-complete-function 'jde-complete-minibuf)
+ '(jde-complete-signature-display '("Eldoc"))
+ '(jde-debugger '("JDEbug"))
  '(jde-enable-abbrev-mode t)
  '(jde-gen-conditional-padding-2 "")
  '(jde-gen-k&r t)
  '(jde-gen-method-signature-padding-2 "")
  '(jde-gen-method-signature-padding-3 " ")
- '(jde-global-classpath (quote (".")))
- '(jde-jdk-registry (quote (("1.4.2" . "$JAVA_HOME"))))
- '(jde-sourcepath (quote (".")))
+ '(jde-global-classpath '("."))
+ '(jde-jdk-registry '(("1.4.2" . "$JAVA_HOME")))
+ '(jde-sourcepath '("."))
+ '(jdee-server-dir "~/eng/tools/jdee-server/target")
  '(jira-url "http://jira.tapjoy.net/rpc/xmlrpc")
  '(large-file-warning-threshold 100000000)
  '(ldap-host-parameters-alist
-   (quote
-    (("ldap.cisco.com" base "o=cisco.com" timelimit 10 sizelimit 100))))
+   '(("ldap.cisco.com" base "o=cisco.com" timelimit 10 sizelimit 100)))
  '(mail-default-directory "~/.emacs.local/")
  '(mail-source-directory "~/.emacs.local/Mail/")
- '(major-mode (quote org-mode))
+ '(major-mode 'org-mode)
+ '(make-backup-files t)
+ '(menu-bar-mode nil)
  '(message-auto-save-directory "~/.emacs.local/Mail/drafts/")
  '(message-directory "~/.emacs.local/Mail/")
+ '(minibuffer-auto-raise nil)
  '(mode-line-format
-   (quote
-    ("%e " mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position
+   '("%e " mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position
      (vc-mode vc-mode)
-     mode-line-misc-info mode-line-modes mode-line-end-spaces)))
+     mode-line-misc-info mode-line-modes mode-line-end-spaces))
  '(mouse-scroll-min-lines 2)
  '(mouse-wheel-progressive-speed t)
+ '(neo-window-width 40)
  '(nnmail-message-id-cache-file "~/.emacs.local/.nnmail-cache")
  '(nxml-child-indent 4)
  '(nxml-outline-child-indent 4)
  '(nxml-slash-auto-complete-flag t)
  '(org-default-notes-file "~/Dropbox/RIGHT_NOW.txt")
  '(org-reverse-note-order t)
- '(package-archives
-   (quote
-    (("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa-stable" . "http://melpa-stable.milkbox.net/packages/")
-     ("melpa" . "http://melpa.milkbox.net/packages/"))))
+ '(package-selected-packages
+   '(color-theme-sanityinc-tomorrow color-theme-solarized js2-highlight-vars add-node-modules-path xref-js2 js2-refactor tern log4j-mode treemacs treemacs-icons-dired treemacs-projectile jdee aggressive-indent markdown-mode yasnippet-snippets ggtags rainbow-delimiters yaml-mode yafolding xml-rpc writeroom-mode window-numbering wgrep vertica undo-tree toggle-quotes tabulated-list sr-speedbar sql-indent smex smart-tab scss-mode scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode rsense robe rinari real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+ magit-log-edit magit-gh-pulls magit-find-file magit-filenotify lua-mode kill-ring-search key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee flycheck-pyflakes flx-ido floobits fireplace exec-path-from-shell etags-table epc ensime enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single dash-functional ctags-update csv-mode crontab-mode company-shell company-go color-identifiers-mode col-highlight coffee-mode clomacs bundler buffer-move browse-kill-ring bm autopair auto-indent-mode anything alchemist ag ack-and-a-half ack ace-jump-mode ac-etags))
+ '(prettier-js-command "prettier")
  '(projectile-cache-file "~/.emacs.local/projectile.cache")
  '(projectile-enable-caching nil)
- '(projectile-find-file-hook (quote (projectile-cache-projects-find-file-hook)))
- '(projectile-globally-ignored-files (quote ("*.elc" "TAGS")))
+ '(projectile-find-file-hook '(projectile-cache-projects-find-file-hook))
+ '(projectile-globally-ignored-files '("*.elc" "TAGS"))
  '(projectile-project-root-files
-   (quote
-    ("rebar.config" "project.clj" "pom.xml" "build.sbt" "build.gradle" "Gemfile" "requirements.txt" "package.json" "gulpfile.js" "Gruntfile.js" "bower.json" "composer.json" "Cargo.toml" "mix.exs" "Rakefile")))
+   '("rebar.config" "project.clj" "pom.xml" "build.sbt" "build.gradle" "Gemfile" "requirements.txt" "package.json" "gulpfile.js" "Gruntfile.js" "bower.json" "composer.json" "Cargo.toml" "mix.exs" "Rakefile"))
  '(projectile-remember-window-configs t)
- '(projectile-sort-order (quote recently-active))
- '(projectile-switch-project-action (quote projectile-commander))
+ '(projectile-sort-order 'recently-active)
+ '(projectile-switch-project-action 'projectile-commander)
+ '(projectile-tags-backend 'find-tag)
  '(ps-line-number t)
  '(ps-line-number-color 50)
- '(python-indent-offset 4)
+ '(python-indent-offset 4 t)
  '(rmail-secondary-file-directory "~/.emacs.local/")
  '(rng-nxml-auto-validate-flag nil)
- '(rspec-command-options "--format documentation --drb --backtrace")
+ '(rspec-command-options "--format documentation --drb")
+ '(rspec-use-bundler-when-possible nil)
  '(rspec-use-rake-when-possible nil)
  '(rspec-use-rvm t)
  '(rvm-configuration-file-name ".ruby-version")
- '(save-abbrevs (quote silently))
- '(save-place t nil (saveplace))
+ '(save-abbrevs 'silently)
  '(save-place-file "~/.emacs.local/emacs-places")
- '(semantic-inhibit-functions (quote (my-semantic-dont-parse)))
+ '(save-place-mode t nil (saveplace))
+ '(semantic-inhibit-functions '(my-semantic-dont-parse))
  '(semanticdb-default-save-directory "~/.emacs.local/semantic.cache")
  '(shell-file-name "/bin/bash")
  '(show-paren-mode t)
- '(show-paren-style (quote mixed))
+ '(show-paren-style 'parenthesis)
  '(show-paren-when-point-in-periphery t)
  '(show-paren-when-point-inside-paren t)
  '(size-indication-mode t)
- '(smart-tab-disabled-major-modes (quote (org-mode term-mode eshell-mode Custom-mode)))
+ '(smart-tab-disabled-major-modes '(org-mode term-mode eshell-mode Custom-mode))
  '(smart-tab-using-hippie-expand t)
- '(speedbar-default-position (quote left-right))
+ '(speedbar-before-visiting-file-hook '(push-mark))
+ '(speedbar-default-position 'left-right)
  '(speedbar-frame-parameters
-   (quote
-    ((minibuffer)
-     (width . 30)
+   '((minibuffer)
+     (width . 50)
      (border-width . 0)
      (menu-bar-lines . 0)
      (tool-bar-lines . 0)
-     (unsplittable . t))))
+     (unsplittable . t)))
+ '(speedbar-indentation-width 2)
  '(speedbar-show-unknown-files t)
  '(speedbar-supported-extension-expressions
-   (quote
-    (".org" ".[ch]\\(\\+\\+\\|pp\\|c\\|h\\|xx\\)?" ".tex\\(i\\(nfo\\)?\\)?" ".el" ".emacs" ".l" ".lsp" ".p" ".java" ".js" ".f\\(90\\|77\\|or\\)?" ".ad[abs]" ".p[lm]" ".tcl" ".m" ".scm" ".pm" ".py" ".g" ".s?html" ".ma?k" "[Mm]akefile\\(\\.in\\)?" ".rb")))
+   '(".org" ".[ch]\\(\\+\\+\\|pp\\|c\\|h\\|xx\\)?" ".tex\\(i\\(nfo\\)?\\)?" ".el" ".emacs" ".l" ".lsp" ".p" ".java" ".js" ".f\\(90\\|77\\|or\\)?" ".ad[abs]" ".p[lm]" ".tcl" ".m" ".scm" ".pm" ".py" ".g" ".s?html" ".ma?k" "[Mm]akefile\\(\\.in\\)?" ".rb"))
  '(speedbar-use-images t)
+ '(speedbar-visiting-file-hook nil)
+ '(sql-connection-alist
+   '(("tapjoy-vertica"
+      (sql-product 'vertica)
+      (sql-user "bi")
+      (sql-password "tap1234!")
+      (sql-server "bi.tapjoy.com")
+      (sql-database "tapjoy"))))
  '(stack-trace-on-error nil t)
  '(tags-revert-without-query t)
  '(tail-hide-delay 0)
@@ -1678,13 +1597,12 @@ won't parse the buffer."
  '(todo-file-do "~/.emacs.local/todo-do")
  '(todo-file-done "~/.emacs.local/todo-done")
  '(todo-file-top "~/.emacs.local/todo-top")
- '(uniquify-buffer-name-style (quote forward) nil (uniquify))
+ '(uniquify-buffer-name-style 'forward nil (uniquify))
  '(uniquify-min-dir-content 1)
  '(uniquify-trailing-separator-p t)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
-   (quote
-    ((20 . "#dc322f")
+   '((20 . "#dc322f")
      (40 . "#cb4b16")
      (60 . "#b58900")
      (80 . "#859900")
@@ -1701,7 +1619,7 @@ won't parse the buffer."
      (300 . "#d33682")
      (320 . "#6c71c4")
      (340 . "#dc322f")
-     (360 . "#cb4b16"))))
+     (360 . "#cb4b16")))
  '(vc-annotate-very-old-color nil)
  '(vc-cvs-diff-switches "-up")
  '(vc-diff-switches "-pu")
@@ -1711,11 +1629,10 @@ won't parse the buffer."
  '(whitespace-line-column 150)
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
-   (quote
-    (face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab tab-mark)))
+   '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab tab-mark))
  '(window-numbering-auto-assign-0-to-minibuffer t)
  '(writeroom-disable-fringe t)
- '(writeroom-fullscreen-effect (quote fullboth))
+ '(writeroom-fullscreen-effect 'fullboth)
  '(writeroom-restore-window-config t)
  '(writeroom-width 150))
 
@@ -1725,6 +1642,8 @@ won't parse the buffer."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(col-highlight ((t (:background "gray15"))))
+ '(js2-highlight-vars-face ((t (:underline t))))
+ '(js2-highlight-vars-second-face ((t (:underline (:color foreground-color :style wave)))))
  '(nxml-attribute-colon-face ((t (:inherit nxml-name-face :foreground "green"))))
  '(nxml-attribute-local-name-face ((t (:inherit nxml-name-face :foreground "limegreen"))))
  '(nxml-attribute-prefix-face ((t (:inherit nxml-name-face :foreground "green"))))
@@ -1778,3 +1697,11 @@ won't parse the buffer."
           confirm-kill-emacs 'nil) ; don't ask to exit
          )))
 (add-hook 'after-init-hook 'my-after-init-hook)
+
+
+;; https://emacs.stackexchange.com/questions/19506/suppress-warning-assignment-to-free-variable-and-others
+;; Suppress assignment to free variable warnings in init file. Most of the time we're modifying other packages
+;; variables. 
+;; Local Variables:
+;; byte-compile-warnings: (not free-vars)
+;; End:

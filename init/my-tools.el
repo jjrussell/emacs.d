@@ -1,3 +1,6 @@
+;; Colorize nested braces and things
+(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+                                                             
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This file conatins initialization for third party packages that I have found.
@@ -8,7 +11,19 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-                                                             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(global-set-key (kbd "C-,") #'embrace-commander)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; github-browse-at-point
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
+(define-key global-map [(control O)] 'github-browse-file)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; The mighty TAB key and all of its magic
 ;;
@@ -21,9 +36,12 @@
 
 ;; snippets for most modes. Custom snippets go in ~/.emacs.d/snippets
 ;; yasnippet autoloads ~/.emacs.d/snippets
+
 (yas-global-mode 1)
+(yasnippet-snippets-initialize)
 ;; yas-expand is explicitly unbound from TAB as it is at the front of the
-;; list of hippie-expand functions to try which smart-tab will use
+;; list of hippie-expand functions to try which smart-tab will use.
+;; hippie-expand is configured in customize
 (define-key yas-minor-mode-map [(tab)] nil)
 (define-key yas-minor-mode-map (kbd "TAB") nil)
 
@@ -37,33 +55,40 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; auto-complete
-(require 'auto-complete-config)
-(ac-config-default)
-;; Don't put hippie expand here because it is at the front of smart-tab list
-(set-default 'ac-sources
-             '(
-               ac-source-yasnippet
-               ac-source-imenu
-               ;;ac-source-dictionary
-               ac-source-words-in-buffer
-               ac-source-words-in-same-mode-buffers
-               ac-source-filename
-               ac-source-abbrev
-               ;;ac-source-semantic
-               ))
+;; (require 'auto-complete-config)
+;; (ac-config-default)
+;; ;; Don't put hippie expand here because it is at the front of smart-tab list
+;; (set-default 'ac-sources
+;;              '(
+;;                ac-source-yasnippet
+;;                ac-source-imenu
+;;                ;;ac-source-dictionary
+;;                ac-source-words-in-buffer
+;;                ac-source-words-in-same-mode-buffers
+;;                ac-source-filename
+;;                ac-source-abbrev
+;;                ;;ac-source-semantic
+;;                ))
 
-(custom-set-variables
- '(ac-etags-requires 1))
+;; (custom-set-variables
+;;  '(ac-etags-requires 1))
 
-(eval-after-load "etags"
-  '(progn
-     (ac-etags-setup)))
-;; added to ruby mode hook in my-development.el
+;; (eval-after-load "etags"
+;;   '(progn
+;;      (ac-etags-setup)))
+;; ;; added to ruby mode hook in my-development.el
 
-(global-auto-complete-mode t)
-(set-default 'ac-fuzzy-enable t)
-(setq ac-fuzzy-enable t)
+;; (global-auto-complete-mode t)
+;; (set-default 'ac-fuzzy-enable t)
+;; (setq ac-fuzzy-enable t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Company mode - alternative to auto-complete
+;; Trying it out 2016-04-01
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; no config needed yet. global-company-mode in customize 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; ido - makes switching between anything in emacs amazing with type-ahead search, fuzzy matching etc.
@@ -89,10 +114,14 @@
 (flx-ido-mode 1) ; fuzzy matching for ido https://github.com/lewang/flx
 ;; disable ido faces to see flx highlights.
 (setq ido-enable-flex-matching t)
-(setq ido-use-faces nil)
+(setq ido-use-faces t)
 
 (define-key global-map [(control x)(control b)] 'ibuffer)
 (global-set-key [(control x) (b)] 'ido-switch-buffer)
+(global-set-key (kbd "<C-tab>") 'ido-switch-buffer)
+(with-eval-after-load 'ido
+  (define-key ido-common-completion-map [(control n)] 'ido-next-match)
+  (define-key ido-common-completion-map [(control p)] 'ido-prev-match))
 
 ;; Fix ido-ubiquitous for newer packages
 ;; http://whattheemacsd.com/setup-ido.el-01.html
@@ -117,9 +146,18 @@
   )
 (defun ido-my-keys ()
   "Add my keybindings for ido."
-  (define-key ido-completion-map "\C-t" 'ido-speedbar)
+  (define-key ido-common-completion-map "\C-t" 'ido-speedbar)
   )
 
+(defun my-speedbar-set-project-root-hook ()
+  (let ((projectile-require-project-root nil))
+    (message (concat "POOP setting default-directory to " (projectile-project-root)))
+    (setq default-directory (projectile-project-root))
+    )
+  )
+
+;;(add-hook 'speedbar-before-visiting-file-hook 'my-speedbar-set-project-root-hook)
+;;(define-key speedbar-mode-map "^" 'speedbar-up-directory)
 (add-hook 'ido-setup-hook 'ido-my-keys)
 
 
@@ -128,44 +166,36 @@
 ;; Projectile and project functions
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(projectile-global-mode t)
-;; superceded by projectile
-;; ffip - look back up directory tree until you find a file in ffip-project-file list
-;; seaches files from there and provides list of files. Its awesome for find in projects
-(setq ffip-project-file '(".git" ".svn" ".prj" "README.md")
-      ffip-limit 10000 ;; MOAR FILES!!
-      ffip-patterns ;; only finds files that match these extensions
-      ;; '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
-      ;;   "*.sh" "*.erl" "*.hs" "*.ml" "*.json" "*.erb" "*.coffee" "*.ejs" "*.yml"
-      ;;   "*css" )
-      '("*")
-      ffip-find-options "-print"
-      ffip-prune-patterns '("vendor" "log" "logs" ".git" "checksums" "tmp" "images"))
+(projectile-mode t)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
-(defun ffip-super-project-root ()
-  "Return the root of the project. It checks for the root of the project as usual by
-searching up for a project root file. However, then it checks that parent directory
-for a .prj file. If it exists, that parent directory is the project root. This allows
-us to put mutiple 'projects' directories into a single parent directory and search
-them all at once."
-  ;; This is the impl from the ffip-project-root function in the main file
-  (let ((project-root (or ffip-project-root
-                          (if (listp ffip-project-file)
-                              (some (apply-partially 'locate-dominating-file
-                                                     default-directory)
-                                    ffip-project-file)
-                            (locate-dominating-file default-directory
-                                                    ffip-project-file)))))
+(defun paste-stack-in-project ()
+  "Paste the clipboard into a new compilation buffer with the default directory set to to the root of the
+current projectile project.
+This allows you to call this when you just copied a stack trace so you can use the compilation buffer's
+cool file navigation and next/prev-error stuff on the stack trace you pasted."
+  (interactive)
+  (when (get-buffer "*stack-trace*")
+    (kill-buffer "*stack-trace*")
+    )
+  
+  (let* ((default-directory (projectile-project-root))
+	(output-buffer (get-buffer-create "*stack-trace*")))
+    (with-current-buffer output-buffer
+      (insert (concat "Stack trace navigation in directory " (abbreviate-file-name default-directory) "\n\n\n"))
+      (yank)
+      (compilation-mode)
+      )
+    (pop-to-buffer output-buffer)
+    )
+  )
+(define-key my-prefix-map "y" 'paste-stack-in-project)
 
-    (if project-root
-        (let ((super-project-root (expand-file-name ".prj" (expand-file-name ".." project-root))))
-          (if (file-exists-p super-project-root )
-              (setq project-root (file-name-directory super-project-root)))))
-    (or project-root
-        (progn (message "No project was defined for the current file.")
-               nil))))
-(setq ffip-project-root-function 'ffip-super-project-root)
-
+;; projectile tag doesn't seem to udpate the tags in ido
+(global-set-key (kbd "M-.") 'projectile-find-tag)
+(global-set-key (kbd "M-p") 'projectile-find-file)
+(global-set-key (kbd "M-t") 'imenu-anywhere)
+(global-set-key (kbd "M-*") 'pop-tag-mark)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -199,7 +229,7 @@ at point."
             ;; if this fails and we catch the error below then we get to call imenu-anywhere
             ;; but it always has no tags. find-tag must do something that imenu-anywhere cna't
             ;; deal with. Not sure what.
-            (find-tag tag-name)
+            (xref-find-definitions tag-name)
           (user-error
            (set 'use-imenu t)
            )
@@ -215,10 +245,6 @@ at point."
 
 
 
-;; projectile tag doesn't seem to udpate the tags in ido
-(global-set-key (kbd "M-.") 'projectile-find-tag)
-(global-set-key (kbd "M-p") 'projectile-find-file)
-(global-set-key (kbd "M-t") 'imenu-anywhere)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -241,12 +267,15 @@ so you have to be in a ruby project that is using bundler or it will bail."
            regexp
            (read-string "name of gem to search: "))))
 
-  (setq directory (substring (shell-command-to-string (concat "ls -d " (getenv "GEM_HOME") "/gems/" gem "* | head -1" )) 0 -1 ))
-  (cond ((not (file-exists-p directory))
-         (message (concat "Could not search for gem " gem " in directory " directory)))
-        ((file-exists-p directory) (ack-and-a-half pattern t directory))))
+  (let ((directory '(substring (shell-command-to-string (concat "ls -d " (getenv "GEM_HOME") "/gems/" gem "* | head -1" )) 0 -1 )))
+    (cond ((not (file-exists-p directory))
+           (message (concat "Could not search for gem " gem " in directory " directory)))
+          ((file-exists-p directory) (ack-and-a-half pattern t directory)))
+
+    ))
 (define-key my-prefix-map "a" 'ack)
 (define-key my-prefix-map "A" 'ack-gem)
+(define-key global-map [(meta F)] 'ack)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -271,14 +300,25 @@ so you have to be in a ruby project that is using bundler or it will bail."
 
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+
+;; vscode bindings
+(global-set-key (kbd "M-<down>") 'mc/mark-next-like-this)
+(global-set-key (kbd "M-<up>") 'mc/mark-previous-like-this)
+
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this-dwim)
 
 ;; expand region on each successive use of this.
 (global-set-key (kbd "C-.") 'er/expand-region)
 
+(defun my-yank-pop ()
+  "If previous command was not a yank, search kill ring"
+  (interactive)
+  (if (eq last-command 'yank)
+      (yank-pop)
+    ;; incremental search through the kill ring. Awesome.
+    (kill-ring-search)))
 
-;; incremental search through the kill ring. Awesome.
-(global-set-key "\M-\C-y" 'kill-ring-search)
+(global-set-key "\M-y" 'my-yank-pop)
 
 ;; better duplicate buffer name handling
 (require 'uniquify)
@@ -341,7 +381,7 @@ so you have to be in a ruby project that is using bundler or it will bail."
 (global-set-key (kbd "M-s i") 'ioccur)
 
 ;; Oh speedbar. How I wish you were useful
-(define-key global-map [(f6)] 'speedbar)
+(define-key global-map [(f6)] 'projectile-speedbar-toggle)
 
 ;; visible bookmarks
 (autoload 'bm-toggle   "bm" "Toggle bookmark in current buffer." t)
@@ -360,21 +400,30 @@ so you have to be in a ruby project that is using bundler or it will bail."
 (global-set-key (kbd "<C-M-left>")   'buf-move-left)
 (global-set-key (kbd "<C-M-right>")  'buf-move-right)
 
-
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; Acejump mode - marking words for direct jumping
-;; (autoload
-;;   'ace-jump-mode-pop-mark
-;;   "ace-jump-mode"
-;;   "Ace jump back:-)"
-;;   t)
-;; (eval-after-load "ace-jump-mode"
-;;   '(ace-jump-mode-enable-mark-sync))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+(autoload
+  'ace-jump-mode-pop-mark
+  "ace-jump-mode"
+  "Ace jump back:-)"
+  t)
+(eval-after-load 'ace-jump-mode
+  '(ace-jump-mode-enable-mark-sync))
 
-;; (define-key global-map (kbd "C-c SPC") 'ace-jump-mode)
-;; (define-key global-map (kbd "C-x SPC") 'ace-jump-mode-pop-mark)
+(define-key global-map (kbd "C-c SPC") 'ace-jump-mode)
+(define-key global-map (kbd "C-x SPC") 'ace-jump-mode-pop-mark)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Ace window mode - ace jump but for windows
+;; https://github.com/abo-abo/ace-window
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+(global-set-key (kbd "M-o") 'ace-window)
+(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
