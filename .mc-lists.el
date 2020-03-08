@@ -22,6 +22,7 @@
 	isearch-printing-char
 	jjr-end
 	jjr-home
+	js2r-kill
 	kill-visual-line
 	markdown-exdent-or-delete
 	match-paren
@@ -32,6 +33,7 @@
 	org-end-of-line
 	org-kill-line
 	py-indent-line
+	rjsx-delete-creates-full-tag
 	ruby-electric-bar
 	ruby-electric-close-matching-char
 	ruby-electric-curlies

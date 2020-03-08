@@ -11,3 +11,12 @@ var/*
 .emacs.desktop
 elpa
 .cache
+.lsp-session-v1
+doom-emacs/
+eclipse.jdt.ls/
+init.el-with-mulitiple-copies-of-custom-set-variables
+profile-dotemacs.el
+site-lisp/prettier-emacs/
+smex-items*
+transient/
+workspace/

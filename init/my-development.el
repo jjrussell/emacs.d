@@ -11,46 +11,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; CEDETS isn't really a programming mode but it is used by ECB
-;; and takes a while to load. For EMACS_MINIMAL we don't load
-;; this file so put it here.
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;Load CEDET - required by ECB so load it first
-;; don't use regular require here as we're loading the file itself
-;; only need cedet if we're using ecb? How long until we uncomment this 2013-03-28
-;; (require-try "common/cedet")
-;; (require 'ecb-autoloads)
-;;Emacs Code Browser.  Makes emacs look like a graphical IDE.
-;;Frames for methods, files, packages, etc.
-;; (autoload 'ecb-minor-mode "ecb" "Emacs Code Browser" t)
-;; (defun my-ecb-activate-hook ()
-;;   (set-frame-width (selected-frame) 175)
-;;   (ecb-restore-window-sizes)
-;;   ;;(set 'truncate-partial-width-windows nil)
-;;   )
-;; (defun my-ecb-deactivate-hook ()
-;;   (set-frame-width (selected-frame) 80)
-;;                                      ;  (set 'truncate-partial-width-windows t)
-;;   )
-;; (add-hook 'ecb-activate-hook 'my-ecb-activate-hook)
-;; (add-hook 'ecb-deactivate-hook 'my-ecb-deactivate-hook)
-
-(global-set-key [(control x) (meta e)] 'ecb-minor-mode) ;; on/off switch
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
 ;; git support
 ;; Mosty use a combination of egg and magit with their default settings
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;(require-try 'egg)
 ;;(require-try 'vc-git) ; meh
+(use-package magit
+  :commands magit-status)
 
 (defun shell-git-status(dir)
+  (interactive)
   "Function called from emacsclient to show git status from pwd"
   (find-file dir)
-  (egg-status nil t)
+  (magit-status)
   (delete-other-windows)
   )
 
@@ -130,11 +104,42 @@
   ;; command line, however modern versions of rvm just pick it up without the bundle exec
   ;; command so leave it off and it all works fine. 
   (setq rspec-use-bundler-when-possible nil)
+
+  ;; Set emacs environment to use the default rvm ruby
+  (rvm-use-default)
+
+  ;; align rules for ruby code
+  ;; https://github.com/jimweirich/emacs-setup-esk/blob/master/ruby-align.el
+  (add-to-list 'align-rules-list
+               '(ruby-comma-delimiter
+                 (regexp . ",\\(\\s-*\\)[^# \t\n]")
+                 (repeat . t)
+                 (modes  . '(ruby-mode))))
+  (add-to-list 'align-rules-list
+               '(ruby-hash-literal
+                 (regexp . "\\(\\s-*\\)=>\\s-*[^# \t\n]")
+                 (group 2 3)
+                 (repeat . t)
+                 (modes  . '(ruby-mode))))
+  (add-to-list 'align-rules-list
+               '(ruby-hash-literal2
+                 (regexp . "[a-z0-9]:\\(\\s-*\\)[^# \t\n]")
+                 (repeat . t)
+                 (modes  . '(ruby-mode))))
+  (add-to-list 'align-rules-list
+               '(ruby-assignment-literal
+                 (regexp . "\\(\\s-*\\)=\\s-*[^# \t\n]")
+                 (repeat . t)
+                 (modes  . '(ruby-mode))))
+  (add-to-list 'align-rules-list
+               '(ruby-xmpfilter-mark
+                 (regexp . "\\(\\s-*\\)# => [^#\t\n]")
+                 (repeat . nil)
+                 (modes  . '(ruby-mode))))
   )
 
 
-;; Set emacs environment to use the default rvm ruby
-(rvm-use-default)
+
 (add-hook 'projectile-mode-hook 'projectile-rails-on)
 (add-hook 'ruby-mode-hook 'my-ruby-mode-hook)
 
@@ -172,52 +177,19 @@ Dependent gems:
           (lambda ()
             (add-hook 'after-save-hook 'update-ruby-tags nil t)))
 
-(autoload 'ruby-mode "ruby-mode" "Mode for editing ruby source files" t)
+
 (add-to-list 'auto-mode-alist '("\\.rb" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.rake" . ruby-mode))
 (add-to-list 'auto-mode-alist '("Rakefile" . ruby-mode))
 (add-to-list 'auto-mode-alist '("Gemfile" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.gemspec" . ruby-mode))
 (add-to-list 'interpreter-mode-alist  '("ruby" . ruby-mode))
+(use-package ruby-mode)
+(use-package inf-ruby
+  :commands (inf-ruby run-ruby inf-ruby-setup-keybindings))
 
-(autoload 'inf-ruby "inf-ruby" "Run an inferior Ruby process" t)
-(autoload 'run-ruby "inf-ruby" "Run an inferior Ruby process" t)
-(autoload 'inf-ruby-setup-keybindings "inf-ruby" "" t)
-(autoload 'rdebug "rdebug" "Ruby debugger" t)
-
-(require 'align)
-
-;; https://github.com/jimweirich/emacs-setup-esk/blob/master/ruby-align.el
-(add-to-list 'align-rules-list
-             '(ruby-comma-delimiter
-               (regexp . ",\\(\\s-*\\)[^# \t\n]")
-               (repeat . t)
-               (modes  . '(ruby-mode))))
-
-(add-to-list 'align-rules-list
-             '(ruby-hash-literal
-               (regexp . "\\(\\s-*\\)=>\\s-*[^# \t\n]")
-               (group 2 3)
-               (repeat . t)
-               (modes  . '(ruby-mode))))
-
-(add-to-list 'align-rules-list
-             '(ruby-hash-literal2
-               (regexp . "[a-z0-9]:\\(\\s-*\\)[^# \t\n]")
-               (repeat . t)
-               (modes  . '(ruby-mode))))
-
-(add-to-list 'align-rules-list
-             '(ruby-assignment-literal
-               (regexp . "\\(\\s-*\\)=\\s-*[^# \t\n]")
-               (repeat . t)
-               (modes  . '(ruby-mode))))
-
-(add-to-list 'align-rules-list
-             '(ruby-xmpfilter-mark
-               (regexp . "\\(\\s-*\\)# => [^#\t\n]")
-               (repeat . nil)
-               (modes  . '(ruby-mode))))
+(use-package align
+  :commands (align-regexp align-entire align-current align-newline-and-indent))
 
 
 ;; Modified slightly from
@@ -318,25 +290,16 @@ Dependent gems:
                                  (setenv "PATH" (mapconcat 'identity exec-path ":"))))
      (require 'prettier-js)
      (add-hook 'rjsx-mode-hook #'prettier-js-mode)
-     (add-hook 'rjsx-mode-hook #'js2-highlight-vars-mode)
+     (add-hook 'rjsx-mode-hook (lambda ()
+                                 (js2-highlight-vars-mode)
+                                 ;; don't let highlight mode clobber my useful keybindings with their silly nonesense
+                                 (setq js2-highlight-vars-local-keymap (make-sparse-keymap))))
 
      
      (define-key js-mode-map [(meta .)] 'js2-jump-to-definition) ; better than xref-find-definitions in JS
      (define-key js-mode-map (kbd "≥") 'js2-jump-to-definition) ; alt-. on mac. Duplicate to be consistent with intellij
      (define-key js-mode-map [(control meta .)] 'xref-find-definitions) ; backup to js2-jump-to-definition
      )) 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Coffee script Mode
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun my-coffee-script-mode-hook ()
-  ;; white space languages don't do well with electric indent mode
-  (setq electric-indent-mode nil)
-  ;; (setq js-indent-level 2)
-  ;; (set-indent)
-  )
-(add-hook 'coffee-mode-hook 'my-coffee-script-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -422,100 +385,6 @@ Dependent gems:
 (add-to-list 'auto-mode-alist '("\\.CPP\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.[rR]ul" . installscript-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; cPerl mode - mildly preferable to standard perl mode
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun my-cperl-mode-hook ()
-  (set-indent)
-  (define-key cperl-mode-map [(control m)] 'newline-and-indent)
-  (cperl-set-style "C++")
-  (cond ((equal (point-max) 1)
-         (create-boilerplate))))
-(add-hook 'cperl-mode-hook 'my-cperl-mode-hook)
-(add-to-list 'auto-mode-alist '("\\.pl$" . cperl-mode))
-(defalias 'perl-mode 'cperl-mode)
-;; This does the same thing as the defalias above
-(autoload 'perl-mode "cperl-mode" "alternate mode for editing Perl" t)
-;;(add-to-list 'interpreter-mode-alist '("miniperl" . cperl-mode))
-
-;; (defun my-server-done-hook ()
-;;   (kill-buffer (current-buffer))
-;;   )
-;; (add-hook 'server-done-hook 'my-server-done-hook)
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Groovy mode
-;; use groovy-mode when file ends in .groovy or has #!/bin/groovy at start
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(autoload 'groovy-mode "groovy-mode" "Major mode for editing Groovy code." t)
-(add-to-list 'auto-mode-alist '("\.groovy$" . groovy-mode))
-(add-to-list 'interpreter-mode-alist '("groovy" . groovy-mode))
-
-;;; make Groovy mode electric by default.
-(add-hook 'groovy-mode-hook
-          '(lambda ()
-             (require 'groovy-electric)
-             (groovy-electric-mode)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; New malabar mode for Java replaces JDEE
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Or enable more if you wish
-(setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
-                                  global-semanticdb-minor-mode
-                                  global-semantic-idle-summary-mode
-                                  global-semantic-mru-bookmark-mode))
-;;(semantic-mode 1)
-(add-hook 'malabar-mode-hook
-          (lambda ()
-            (add-hook 'after-save-hook 'malabar-compile-file-silently
-                      nil t)))
-
-(autoload 'malabar-mode "malabar-mode"
-  "Java editing mode." t)
-(setq malabar-groovy-lib-dir
-      (concat my-site-lisp-dir "/malabar-1.5-SNAPSHOT/lib"))
-(add-to-list 'auto-mode-alist '("\\.java\\'" . java-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Python Mode
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun my-python-doc-function-or-class ()
-;;   (interactive)
-;;   (py-beginning-of-def-or-class)
-;;   (end-of-line)
-;;   (py-newline-and-indent)
-;;   (insert "\"\"\"\"\"\"")
-;;   (backward-char)(backward-char)(backward-char))
-
-;; (defun my-python-mode-hook ()
-;;   (set-indent)
-;;   (setq indent-tabs-mode nil)
-;;   (cond ((equal (point-max) 1)
-;;          (create-boilerplate)))
-;;   (define-key py-mode-map [(control c) (d)] 'my-python-doc-function-or-class))
-
-;; (add-hook 'python-mode-hook 'my-python-mode-hook)
-
-;; (autoload 'pymacs-load "pymacs" nil t)
-;; (autoload 'pymacs-eval "pymacs" nil t)
-;; (autoload 'pymacs-apply "pymacs")
-;; (autoload 'pymacs-call "pymacs")
-
-;; (autoload 'python-mode "python-mode" "Python Mode" t)
-;; (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

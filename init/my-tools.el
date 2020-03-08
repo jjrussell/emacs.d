@@ -1,6 +1,3 @@
-;; Colorize nested braces and things
-(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
-                                                             
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This file conatins initialization for third party packages that I have found.
@@ -11,8 +8,170 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Use package
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
 
-(global-set-key (kbd "C-,") #'embrace-commander)
+(use-package treemacs
+  :bind ("M-!" . treemacs))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Hydra   definitions
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; (define-key my-prefix-map "w"
+;;   '(lambda () (interactive) (set-frame-width (selected-frame)100)))
+;; (define-key my-prefix-map [(meta w)]
+;;   '(lambda () (interactive) (set-frame-width (selected-frame) 200)))
+;; (define-key my-prefix-map [(meta h)]
+;;   '(lambda () (interactive) (set-frame-height (selected-frame) 87)))
+;; (define-key my-prefix-map [(meta b)]
+;;   '(lambda () (interactive) (set-frame-height (selected-frame) 87)(set-frame-width (selected-frame) 200)))
+;; (define-key my-prefix-map [(control meta h)]
+;;   '(lambda () (interactive)
+;;      (set-frame-height (selected-frame) (+(frame-height) 10)) ))
+;;
+					; ;
+(defhydra hydra-mine (:exit t :color teal :hint nil)
+  ("R" (lambda ()
+         "Reload .emacs file and recompile any init files that need it."
+         (interactive)
+         ;; Make sure that the newest versions of init files are compiled.
+         (byte-recompile-directory my-emacs-init-dir 0)
+         ;;(byte-recompile-directory my-emacs-local-store)
+         ;; don't force recompile, compile if no .elc is present and load file when done
+
+         ;; 2019-04-23 trying not compiling init.el so customization takes effect without recompiling
+         ;; is it that much slower?
+	 (byte-recompile-file user-init-file nil 0 t)
+         (my-after-init-hook)
+         ) "Reload emacs config" :column "Quick Open")
+  ("e" (lambda () (interactive) (find-file user-init-file)) "init.el")
+  ("j" (lambda () (interactive) (find-file "~/.bashrc")) ".bashrc")
+  ("J" (lambda () (interactive) (find-file "~/.jshrc")) ".jshrc")
+  ("s" (lambda () (interactive) (switch-to-buffer "*scratch*")) "*scratch*")
+  ("m" (lambda () (interactive) (switch-to-buffer "*Messages*")) "*Messages")
+
+
+  ("\\" my-indent-buffer "indent buffer" :column "Text")
+  
+  ("u" duplicate-thing "duplicate line")
+
+  ("i" insert-short-date "insert short date ")
+  ("C-i" insert-long-date "insert long date")
+  ("M-i" insert-time "insert time")
+  ("C-M-i" insert-full-date-and-time "insert full date and time")
+  ("#" my-comment-block "command block")
+
+  ("t" org-capture "org-capture")
+  ("C-e" edebug-defun "edebug-defun")
+  ("M-p" fill-paragraph "fill-paragraph")
+  ("C-M-p" fill-region "fill-region")
+  ("b" browse-url-at-point "browse-url-at-point")
+  ("f" my-init-flyspell "toggle flyspell")
+  ("o" my-occur-all-buffers "occur all buffers")
+  
+  ("!" shell-command "shell-command" :column "Utilities")
+  ( "a" ack "ack")
+  ("y" paste-stack-in-project "paste-stack-in-project")  
+  ("M-t" toggle-window-dedicated "toggle-window-dedicated")
+  ("n" my-truncate-toggle "toggle truncate lines")
+  ("1" my-open-terminal-here "open terminal cwd")
+  ("3" my-open-filemanager-here "open file manager cwd")
+  ("C-k" my-delete-file-of-buffer "Delete file of buffer")
+  
+  ("q"  nil "cancel" :color blue :column "Hydra") )
+(global-set-key (kbd "C-x d") 'hydra-mine/body)
+
+(defhydra hydra-lsp (:exit t :hint nil)
+  "
+ Buffer^^               Server^^                   Symbol
+-------------------------------------------------------------------------------------
+ [_f_] format           [_M-r_] restart            [_d_] declaration  [_i_] implementation  [_o_] documentation
+ [_m_] imenu            [_S_]   shutdown           [_D_] definition   [_t_] type            [_r_] rename
+ [_x_] execute action   [_M-s_] describe session   [_R_] references   [_s_] signature"
+  ("d" lsp-find-declaration)
+  ("D" lsp-ui-peek-find-definitions)
+  ("R" lsp-ui-peek-find-references)
+  ("i" lsp-ui-peek-find-implementation)
+  ("t" lsp-find-type-definition)
+  ("s" lsp-signature-help)
+  ("o" lsp-describe-thing-at-point)
+  ("r" lsp-rename)
+
+  ("f" lsp-format-buffer)
+  ("m" lsp-ui-imenu)
+  ("x" lsp-execute-code-action)
+
+  ("M-s" lsp-describe-session)
+  ("M-r" lsp-workspace-restart)
+  ("S" lsp-workspace-shutdown))
+
+(defhydra hydra-projectile (:color teal
+                                   :hint nil)
+  "
+     PROJECTILE: %(projectile-project-root)
+
+     Find File            Search/Tags          Buffers                Cache
+------------------------------------------------------------------------------------------
+_s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache clear
+ _ff_: file dwim       _g_: update gtags      _b_: switch to buffer  _x_: remove known project
+ _fd_: file curr dir   _o_: multi-occur     _s-k_: Kill all buffers  _X_: cleanup non-existing
+  _r_: recent file                                               ^^^^_z_: cache current
+  _d_: dir
+
+"
+  ("a"   projectile-ag)
+  ("b"   projectile-switch-to-buffer)
+  ("c"   projectile-invalidate-cache)
+  ("d"   projectile-find-dir)
+  ("s-f" projectile-find-file)
+  ("ff"  projectile-find-file-dwim)
+  ("fd"  projectile-find-file-in-directory)
+  ("g"   ggtags-update-tags)
+  ("s-g" ggtags-update-tags)
+  ("i"   projectile-ibuffer)
+  ("K"   projectile-kill-buffers)
+  ("s-k" projectile-kill-buffers)
+  ("m"   projectile-multi-occur)
+  ("o"   projectile-multi-occur)
+  ("s-p" projectile-switch-project "switch project")
+  ("p"   projectile-switch-project)
+  ("s"   projectile-switch-project)
+  ("r"   projectile-recentf)
+  ("x"   projectile-remove-known-project)
+  ("X"   projectile-cleanup-known-projects)
+  ("z"   projectile-cache-current-file)
+  ("`"   hydra-projectile-other-window/body "other window")
+  ("q"   nil "cancel" :color blue))
+;; 
+(global-set-key (kbd "C-x m") 'hydra-projectile/body)
+
+;; https://github.com/hlissner/emacs-doom-themes
+;; Enable custom neotree theme (all-the-icons must be installed!)
+(doom-themes-neotree-config)
+;; or for treemacs users
+(doom-themes-treemacs-config)
+
+;; Corrects (and improves) org-mode's native fontification.
+(doom-themes-org-config)
+
+;; Colorize nested braces and things
+(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+
+
+;; match parens and quotes etc. Better than electric-pair-mode becuase
+;; it auto-deletes adjacent matching pairs
+;; works with cua-/delete-selection-mode
+(autopair-global-mode)
+
+(use-package embrace
+  :bind ("C-," . embrace-commander))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -99,7 +258,8 @@
 
 
 ;; enable ido style completion in M-x menu
-(global-set-key (kbd "M-x") 'smex)
+(use-package smex
+  :bind ("M-x" . smex))
 
 
 (ido-mode 1)    ; actually I kind of like it with file
@@ -110,7 +270,7 @@
 ;; ido-vertical mode needs more space. With horizontal ido 3 is good
 (setq ido-max-window-height 30)
 
-					;;(require 'flx-ido)
+;;(require 'flx-ido)
 (flx-ido-mode 1) ; fuzzy matching for ido https://github.com/lewang/flx
 ;; disable ido faces to see flx highlights.
 (setq ido-enable-flex-matching t)
@@ -135,67 +295,20 @@
 (ido-ubiquitous-use-new-completing-read yas/expand 'yasnippet)
 (ido-ubiquitous-use-new-completing-read yas/visit-snippet-file 'yasnippet)
 
-(defun ido-speedbar()
-  (interactive)
-  (message "update set default directory to %s and launching speedbar" default-directory)
-  (speedbar 1)
-  (setq default-directory ido-current-directory)
-  (speedbar-update-contents)
-  (setq ido-require-match nil)
-  (ido-exit-minibuffer)
-  )
-(defun ido-my-keys ()
-  "Add my keybindings for ido."
-  (define-key ido-common-completion-map "\C-t" 'ido-speedbar)
-  )
-
-(defun my-speedbar-set-project-root-hook ()
-  (let ((projectile-require-project-root nil))
-    (message (concat "POOP setting default-directory to " (projectile-project-root)))
-    (setq default-directory (projectile-project-root))
-    )
-  )
-
-;;(add-hook 'speedbar-before-visiting-file-hook 'my-speedbar-set-project-root-hook)
-;;(define-key speedbar-mode-map "^" 'speedbar-up-directory)
-(add-hook 'ido-setup-hook 'ido-my-keys)
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Projectile and project functions
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(projectile-mode t)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-
-(defun paste-stack-in-project ()
-  "Paste the clipboard into a new compilation buffer with the default directory set to to the root of the
-current projectile project.
-This allows you to call this when you just copied a stack trace so you can use the compilation buffer's
-cool file navigation and next/prev-error stuff on the stack trace you pasted."
-  (interactive)
-  (when (get-buffer "*stack-trace*")
-    (kill-buffer "*stack-trace*")
-    )
-  
-  (let* ((default-directory (projectile-project-root))
-	(output-buffer (get-buffer-create "*stack-trace*")))
-    (with-current-buffer output-buffer
-      (insert (concat "Stack trace navigation in directory " (abbreviate-file-name default-directory) "\n\n\n"))
-      (yank)
-      (compilation-mode)
-      )
-    (pop-to-buffer output-buffer)
-    )
-  )
-(define-key my-prefix-map "y" 'paste-stack-in-project)
-
-;; projectile tag doesn't seem to udpate the tags in ido
-(global-set-key (kbd "M-.") 'projectile-find-tag)
-(global-set-key (kbd "M-p") 'projectile-find-file)
-(global-set-key (kbd "M-t") 'imenu-anywhere)
-(global-set-key (kbd "M-*") 'pop-tag-mark)
+(use-package projectile
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :bind (
+         ;; projectile tag doesn't seem to udpate the tags in ido
+	 ("M-." . projectile-find-tag)
+	 ("M-p" . projectile-find-file)
+	 ("M-t" . imenu-anywhere)
+	 ("M-*" . pop-tag-mark)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -273,8 +386,6 @@ so you have to be in a ruby project that is using bundler or it will bail."
           ((file-exists-p directory) (ack-and-a-half pattern t directory)))
 
     ))
-(define-key my-prefix-map "a" 'ack)
-(define-key my-prefix-map "A" 'ack-gem)
 (define-key global-map [(meta F)] 'ack)
 
 
@@ -316,7 +427,7 @@ so you have to be in a ruby project that is using bundler or it will bail."
   (if (eq last-command 'yank)
       (yank-pop)
     ;; incremental search through the kill ring. Awesome.
-    (kill-ring-search)))
+    (browse-kill-ring)))
 
 (global-set-key "\M-y" 'my-yank-pop)
 
@@ -324,8 +435,6 @@ so you have to be in a ruby project that is using bundler or it will bail."
 (require 'uniquify)
 
 (require 'newcomment) ;; loads stuff for my cool comment block function my-comment-block
-
-(window-numbering-mode t) ; meta NUMBER to switch to a given buffer. Meta 0 is always minibuffer
 
 (defun switch-to-minibuffer ()
   "Switch to minibuffer window."
@@ -360,14 +469,6 @@ so you have to be in a ruby project that is using bundler or it will bail."
 ;; if perspective mode is enabled either by customize or in any other file it causes weird errors with
 ;; ido-buffer-switch. If we load it after all lisp is loaded and files are reopened it works. Wonky.
 (add-hook 'desktop-after-read-hook (lambda () (persp-mode t)))
-
-;; duplicate lines
-(define-key my-prefix-map "u" 'duplicate-thing)
-
-;; match parens and quotes etc. Better than electric-pair-mode becuase
-;; it auto-deletes adjacent matching pairs
-;; works with cua-/delete-selection-mode
-(autopair-global-mode)
 
 ;; Takes over these keys to let you type them fast in succesion to perform commands.
 ;; Using common keys can result in a slight delay on the lead key but mostly I've never noticed this
