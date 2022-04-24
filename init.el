@@ -237,87 +237,6 @@
              (directory-files my-site-lisp-dir nil "^\\w")
              )
        ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; OS/Platform specific settings
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(cond (my-unixp
-       ;; Try to turn the mode-line red when we are running as root
-       ;; This doesn't always work as UID is not exported and USER isn't
-       ;; updated when you use 'su'.
-       (if (or (string= (getenv "USER") "root")
-	       (string= (getenv "UID") "0")
-	       (string= (getenv "EUID") "0")
-	       (string= (getenv "HOME") "/root"))
-           (set-face-background 'mode-line "red"))
-
-       ;; Don't run the emacs server if we are running minimal emacs config
-       (cond ((not (getenv "EMACS_MINIMAL"))
-	      ;; Emacs server starts a listener on emacs that emacsclient can send files to for opening.
-	      ;; This lets you have just one emacs running and everything else sends stuff to it.
-	      ;; 
-	      ;; Calls emacsclient to check if another instance of emacs
-	      ;; is already running a server. The lambda is the process-filter
-	      ;; which gets the output and calls start-server if no other emacs server
-	      ;; was found by the emacsclient process.
-	      (let ((process-connection-type nil))
-                (set-process-filter
-                 (start-process "my-process" nil "emacsclient" "--eval" "t")
-                 (lambda (process output)
-                   (if (equal output "t\n")
-		       (message "Not starting server, one instance already running.")
-                     (message "Starting emacs server...")
-                     (server-start)))
-                 ))))
-
-       ;; OSX. Mostly a unix, but still needs some help
-       (cond ((eq system-type 'darwin)
-
-	      ;; actually makes the command key behave on the mac. Its awesome
-	      ;; most of this good stuff is found at
-	      ;; http://lojic.com/blog/2010/03/17/switching-from-carbonemacs-to-emacs-app/
-	      (setq mac-option-key-is-meta nil)
-	      (setq mac-command-key-is-meta t)
-	      (setq mac-command-modifier 'meta)
-	      (setq mac-option-modifier nil)
-
-	      ;; use spotlight instead of locate command to find stuff
-	      (setq locate-command "mdfind")
-
-	      ;; this puts windows in the background on the mac
-	      ;; who needs mark paragraph anyway?
-	      (global-set-key (kbd "M-h") 'ns-do-hide-emacs)
-
-	      ;; I want this back to switch between emacs windows
-	      ;; it was mapped to tmm-menubar.  Whatever
-	      (global-set-key [?\M-`] 'other-frame)
-
-	      ;; if emacs is launched from spotlight or quicksilver it gets the
-	      ;; default-directory / which is useless. Set it to home.
-	      (unless (string-match (getenv "HOME") default-directory)
-                (cd (getenv "HOME"))
-                )
-	      ))
-       ;; end of OSX specific
-       )
-      ;;End of UNIX specific
-      ((eq system-type 'windows-nt)
-       ;; put windows specific stuff here.
-       ;; Most of this assumes Cygwin is installed.
-
-       ;; Setup Emacs to run bash as its primary shell.
-       (setq shell-file-name "/bin/bash"
-             shell-command-switch "-c"
-             explicit-shell-file-name shell-file-name
-             explicit-sh-args '("-login" "-i"))
-       (setenv "SHELL" shell-file-name)
-
-       (if (boundp 'w32-quote-process-args)
-           (setq w32-quote-process-args ?\"))
-       ))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; End initial configuration
@@ -1179,17 +1098,6 @@ won't parse the buffer."
   ;; the trimmed down emacs for fast open for a quick edit.  Don't
   ;; load all the crap in these files.
   (cond ((not (getenv "EMACS_MINIMAL"))
-         ;; settings from the environment. Because OSX doesn't load the shell environment for applications
-         ;; we have to set these here in the after-hook in order to give
-         ;; exec-path-from-shell-variables a chance to be loaded and run.
-         (setq user-full-name (if (getenv "MY_NAME") (getenv "MY_NAME") user-full-name)
-	       user-mail-address (if (getenv "MY_EMAIL_PERSONAL") (getenv "MY_EMAIL_PERSONAL") user-mail-address))
-
-         ;; (setq my-eng (getenv "MY_ENG")
-	 ;;       my-src (concat my-eng "/src")
-	 ;;       my-env  (getenv "MY_ENV"))
-         ;;
-
          ;;
          ;; ELPA Packages <3 <3 <3
          ;;
@@ -1209,8 +1117,25 @@ won't parse the buffer."
          ;; Make sure that this list of packages are always installed.
          ;; 2019-04-23 trying out just this function instead of tracking all this mess myself
          (package-install-selected-packages)
+	 
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	 ;;
+	 ;; OS/Platform specific settings
+	 ;;
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	 (cond ((eq system-type 'darwin)
+                ;; settings from the environment. Because OSX doesn't load the shell environment for applications
+		;; we have to set these here in the after-hook in order to give
+		;; exec-path-from-shell-variables a chance to be loaded and run.
+		(setq user-full-name (if (getenv "MY_NAME") (getenv "MY_NAME") user-full-name)
+		      user-mail-address (if (getenv "MY_EMAIL_PERSONAL") (getenv "MY_EMAIL_PERSONAL") user-mail-address))
 
-         (cond ((eq system-type 'darwin)
+		;; (setq my-eng (getenv "MY_ENG")
+		;;       my-src (concat my-eng "/src")
+		;;       my-env  (getenv "MY_ENV"))
+		;;
+
+
        	        ;; lets emacs find stuff on the path.  This is only necessary on OSX because on
                 ;; linux emacs inherits the shell variables we set in our .bashrc config file. On OSX
                 ;; applications do not inherit the shell environment. WTF Apple? Seriously.
@@ -1219,25 +1144,72 @@ won't parse the buffer."
 	        (setenv "PATH" (mapconcat 'identity exec-path ":"))
 	        (setenv "LANG" "en_US.UTF-8")
 	        (setenv "LC_CTYPE" "en_US.UTF-8")
-                ))
-	 
-         ;; loading and customization for third party packages, elpa and otherwise
-         (require 'my-tools)
+                
+		;; actually makes the command key behave on the mac. Its awesome
+		;; most of this good stuff is found at
+		;; http://lojic.com/blog/2010/03/17/switching-from-carbonemacs-to-emacs-app/
+		(setq mac-command-modifier 'meta)
+		(setq mac-option-modifier nil)
 
-         ;; Load programming language modes and heavier dev tools
-         (require 'my-development)
+		;; use spotlight instead of locate command to find stuff
+		(setq locate-command "mdfind")
+
+		;; this puts windows in the background on the mac
+		;; who needs mark paragraph anyway?
+		(global-set-key (kbd "M-h") 'ns-do-hide-emacs)
+
+		;; I want this back to switch between emacs windows
+		;; it was mapped to tmm-menubar.  Whatever
+		(global-set-key [?\M-`] 'other-frame)
+
+		;; if emacs is launched from spotlight or quicksilver it gets the
+		;; default-directory / which is useless. Set it to home.
+		(unless (string-match (getenv "HOME") default-directory)
+		  (cd (getenv "HOME"))
+		  
+
+		  )))
+	 (cond (my-unixp
+		;; Don't run the emacs server if we are running minimal emacs config
+		
+                ;; Emacs server starts a listener on emacs that emacsclient can send files to for opening.
+                ;; This lets you have just one emacs running and everything else sends stuff to it.
+                ;; 
+                ;; Calls emacsclient to check if another instance of emacs
+                ;; is already running a server. The lambda is the process-filter
+                ;; which gets the output and calls start-server if no other emacs server
+                ;; was found by the emacsclient process.
+                (let ((process-connection-type nil))
+		  (set-process-filter
+		   (start-process "my-process" nil "emacsclient" "--eval" "t")
+		   (lambda (process output)
+		     (if (equal output "t\n")
+			 (message "Not starting server, one instance already running.")
+		       (message "Starting emacs server...")
+		       (server-start)))
+		   )))
+	       )
+	 ;; loading and customization for third party packages, elpa and otherwise
+	 (require 'my-tools)
+
+	 ;; Load programming language modes and heavier dev tools
+	 (require 'my-development)
 
 	 (message "after init hook completed")
-         )
-        ((getenv "EMACS_MINIMAL")
-         ;; (message "EMACS_MINIMAL set in environment.  Loading minimal tools")
-         ;; pager isn't loaded but I hate having C-z background the process. Use C-x z instead.
-         (global-unset-key [(control z)])
-         (setq
-          desktop-save nil  ; don't load desktop in minimal mode
-          desktop-save-mode nil
-          confirm-kill-emacs 'nil) ; don't ask to exit
-         )))
+	 )
+	((getenv "EMACS_MINIMAL")
+	 ;; (message "EMACS_MINIMAL set in environment.  Loading minimal tools")
+	 ;; pager isn't loaded but I hate having C-z background the process. Use C-x z instead.
+	 (global-unset-key [(control z)])
+	 (setq
+	  desktop-save nil  ; don't load desktop in minimal mode
+	  desktop-save-mode nil
+	  confirm-kill-emacs 'nil) ; don't ask to exit
+	 ))
+
+  ;; run this after darwin cond so env vars are set properly
+  
+  ) 
 (add-hook 'after-init-hook 'my-after-init-hook)
 
 
