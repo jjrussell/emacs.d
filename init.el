@@ -19,14 +19,6 @@
 	    (setq gc-cons-threshold 1000000000 ; 1GB
 		  gc-cons-percentage 0.1)))
 
-;; make packages avaialble during init. By default they are loaded after init.el loads
-;; define custom package archives here so they are available when we call package-initialize
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;;(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
-
-
-
 ;; set root of personal emacs repository and common directories used
 ;; in functions and other variables below
 (defconst user-emacs-directory (expand-file-name ".emacs.d" "~"))
@@ -247,26 +239,6 @@
        ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; ELPA Packages <3 <3 <3
-;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(package-initialize)
-(require 'use-package)
-
-
-
-;; Make sure that this list of packages are always installed.
-;; 2019-04-23 trying out just this function instead of tracking all this mess myself
-(package-install-selected-packages)
-
-;; loading and customization for third party packages, elpa and otherwise
-(require 'my-tools)
-
-;; Load programming language modes and heavier dev tools
-(require 'my-development)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; OS/Platform specific settings
 ;;
@@ -313,14 +285,6 @@
 
 	      ;; use spotlight instead of locate command to find stuff
 	      (setq locate-command "mdfind")
-
-	      ;; lets emacs find stuff on the path.  This is only necessary on OSX because on
-	      ;; linux emacs inherits the shell variables we set in our .bashrc config file. On OSX
-	      ;; applications do not inherit the shell environment. WTF Apple? Seriously.
-	      (exec-path-from-shell-initialize)
-	      (setenv "PATH" (mapconcat 'identity exec-path ":"))
-	      (setenv "LANG" "en_US.UTF-8")
-	      (setenv "LC_CTYPE" "en_US.UTF-8")
 
 	      ;; this puts windows in the background on the mac
 	      ;; who needs mark paragraph anyway?
@@ -1209,6 +1173,7 @@ won't parse the buffer."
 ;; We want this to run before the desktop restores previously opened buffers so
 ;; modes and extras are available to be loaded with the buffers that use them
 (defun my-after-init-hook()
+  "To be run after setup to ensure custom variables are set."
   (message "running after init hook")
   ;; If the EMACS_MINIMAL environment variable is set, then we want
   ;; the trimmed down emacs for fast open for a quick edit.  Don't
@@ -1220,9 +1185,49 @@ won't parse the buffer."
          (setq user-full-name (if (getenv "MY_NAME") (getenv "MY_NAME") user-full-name)
 	       user-mail-address (if (getenv "MY_EMAIL_PERSONAL") (getenv "MY_EMAIL_PERSONAL") user-mail-address))
 
-         (setq my-eng (getenv "MY_ENG")
-	       my-src (concat my-eng "/src")
-	       my-env  (getenv "MY_ENV"))
+         ;; (setq my-eng (getenv "MY_ENG")
+	 ;;       my-src (concat my-eng "/src")
+	 ;;       my-env  (getenv "MY_ENV"))
+         ;;
+
+         ;;
+         ;; ELPA Packages <3 <3 <3
+         ;;
+         ;; make packages avaialble during init. By default they are loaded after init.el loads
+         ;; define custom package archives here so they are available when we call package-initialize
+         (require 'package)
+         (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+         ;;(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+
+         (package-initialize)
+         (unless (package-installed-p 'use-package)
+           (package-refresh-contents)
+           (package-install 'use-package))
+         (require 'use-package)
+
+
+         ;; Make sure that this list of packages are always installed.
+         ;; 2019-04-23 trying out just this function instead of tracking all this mess myself
+         (package-install-selected-packages)
+
+         (cond ((eq system-type 'darwin)
+       	        ;; lets emacs find stuff on the path.  This is only necessary on OSX because on
+                ;; linux emacs inherits the shell variables we set in our .bashrc config file. On OSX
+                ;; applications do not inherit the shell environment. WTF Apple? Seriously.
+                ;; needs to be after package-install-selected-packages so that exec-path package is installed
+	        (exec-path-from-shell-initialize)
+	        (setenv "PATH" (mapconcat 'identity exec-path ":"))
+	        (setenv "LANG" "en_US.UTF-8")
+	        (setenv "LC_CTYPE" "en_US.UTF-8")
+                ))
+	 
+         ;; loading and customization for third party packages, elpa and otherwise
+         (require 'my-tools)
+
+         ;; Load programming language modes and heavier dev tools
+         (require 'my-development)
+
+	 (message "after init hook completed")
          )
         ((getenv "EMACS_MINIMAL")
          ;; (message "EMACS_MINIMAL set in environment.  Loading minimal tools")
@@ -1426,7 +1431,7 @@ won't parse the buffer."
  '(global-subword-mode t)
  '(global-undo-tree-mode t)
  '(global-visual-line-mode t)
- '(global-writeroom-mode nil nil (writeroom-mode))
+ '(global-writeroom-mode nil)
  '(gnutls-algorithm-priority "normal:-vers-tls1.3")
  '(grep-command "grep -2EInir ")
  '(grep-highlight-matches 'auto-detect)
@@ -1506,7 +1511,7 @@ won't parse the buffer."
  '(org-roam-mode t nil (org-roam))
  '(org-startup-indented t)
  '(package-selected-packages
-   '(treemacs-all-the-icons treemacs-icons-dired helm-lsp lsp-ui lsp-treemacs goto-last-change org-roam protobuf-mode rdebug magit hydra treemacs-magit use-package doom-modeline lsp-javascript-typescript lsp-intellij lsp-java lsp-mode iedit doom-themes centered-window dracula-theme color-theme-sanityinc-tomorrow js2-highlight-vars add-node-modules-path js2-refactor tern log4j-mode aggressive-indent markdown-mode ggtags rainbow-delimiters yafolding xml-rpc window-numbering vertica undo-tree toggle-quotes tabulated-list sql-indent smex scss-mode scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+ magit-gh-pulls magit-find-file magit-filenotify key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee flycheck-pyflakes flx-ido fireplace exec-path-from-shell etags-table epc ensime enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single dash-functional ctags-update csv-mode crontab-mode company-shell company-go color-identifiers-mode col-highlight coffee-mode bundler buffer-move browse-kill-ring bm autopair auto-indent-mode anything alchemist ag ack-and-a-half ack ace-jump-mode ac-etags))
+   '(ido-completing-read+ yasnippet-snippets treemacs-all-the-icons treemacs-icons-dired helm-lsp lsp-ui lsp-treemacs goto-last-change org-roam protobuf-mode rdebug magit hydra treemacs-magit use-package doom-modeline lsp-javascript-typescript lsp-intellij lsp-java lsp-mode iedit doom-themes centered-window dracula-theme color-theme-sanityinc-tomorrow js2-highlight-vars add-node-modules-path js2-refactor tern log4j-mode aggressive-indent markdown-mode ggtags rainbow-delimiters yafolding xml-rpc window-numbering vertica undo-tree toggle-quotes tabulated-list sql-indent smex scss-mode scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+ magit-gh-pulls magit-find-file magit-filenotify key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee flycheck-pyflakes flx-ido fireplace exec-path-from-shell etags-table epc ensime enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single dash-functional ctags-update csv-mode crontab-mode company-shell company-go color-identifiers-mode col-highlight coffee-mode bundler buffer-move browse-kill-ring bm autopair auto-indent-mode anything alchemist ag ack-and-a-half ack ace-jump-mode ac-etags))
  '(prettier-js-command "prettier")
  '(projectile-cache-file "~/.emacs.local/projectile.cache")
  '(projectile-enable-caching nil)

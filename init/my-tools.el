@@ -169,11 +169,7 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;; Colorize nested braces and things
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 
-
-;; match parens and quotes etc. Better than electric-pair-mode becuase
-;; it auto-deletes adjacent matching pairs
-;; works with cua-/delete-selection-mode
-(autopair-global-mode)
+(electric-pair-mode)
 
 (use-package embrace
   :bind ("C-," . embrace-commander))
@@ -202,7 +198,7 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;; yasnippet autoloads ~/.emacs.d/snippets
 
 (yas-global-mode 1)
-(yasnippet-snippets-initialize)
+;; (yasnippet-snippets-initialize) ; 2022-04-23 this function appears to be gone
 ;; yas-expand is explicitly unbound from TAB as it is at the front of the
 ;; list of hippie-expand functions to try which smart-tab will use.
 ;; hippie-expand is configured in customize
@@ -270,7 +266,10 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 (ido-mode 1)    ; actually I kind of like it with file
 (ido-everywhere 1)
 ;; use ido absolutely everywhere where completing-read would be
-(ido-ubiquitous-mode 1)
+;; 2022-04-23 stopped working https://github.com/mrkkrp/ido-ubiquitous
+;; doesn't appear to be in melpa. Forked from DarwinAwardWinner/ido-completing-read-plus
+;; which I have installed so this is likely abandoned. 
+;; (ido-ubiquitous-mode 1) 
 (ido-vertical-mode 1) ; default is horizontal. Not sure which I like better
 ;; ido-vertical mode needs more space. With horizontal ido 3 is good
 (setq ido-max-window-height 30)
@@ -322,7 +321,8 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Update tags file whenever I switch files and do a tags thing.
 ;; sets advice on tags functions to update the file
-(require 'etags-table)
+;; 2022-04-23 no package available. Not sure what replaced it. Don't use tags much
+;; (require 'etags-table)
 
 
 ;; use ido to find imenu tags
