@@ -50,6 +50,7 @@
       '(
 	goto-line
 	ido-switch-buffer
+	mark-whole-buffer
 	ns-open-file-select-line
 	org-self-insert-command
 	pager-row-down
