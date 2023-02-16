@@ -70,6 +70,7 @@
 (subword-mode 1) ; makes next-word etc work on camel case words
 (cond (window-system (global-hl-line-mode 1)))  ; highlight current line. Looks terrible in terminal
 (column-number-mode t)        ; show column number next to line number
+(electric-indent-mode 1) ; global minor mode for auto indent on newline
 
 ;; hide mousey controls. You're using emacs. Seriously.
 (scroll-bar-mode -1)
@@ -112,21 +113,11 @@
  next-line-add-newlines nil ; adds new lines to the end of buffers
  mouse-yank-at-point t          ; yank at point, not at click, but who uses the mouse anyway?
  parens-require-spaces nil ; no whitespace padding around parens
- confirm-kill-emacs 'y-or-n-p ; prompt to exit
+                                        ; confirm-kill-emacs 'y-or-n-p ; prompt to exit
  )
 (fset 'yes-or-no-p 'y-or-n-p) ; Make all "yes or no" prompts "y or n" instead
 ;; this fixes the meta key with ubuntu on the macbook
 ;;(setq x-super-keysym 'meta)
-
-(electric-indent-mode 1) ; global minor mode for auto indent on newline
-
-
-
-;; pretty font colors
-;; (require 'font-lock)
-;; (font-lock-mode t)
-;; (global-font-lock-mode t)
-;; (set 'font-lock-maximum-decoration t) ; Maximum colors. All the way to 11
 
 ;; keep a list of recently opened files.
 (recentf-mode t)
@@ -1253,7 +1244,7 @@ won't parse the buffer."
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
    '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
- '(auto-indent-global-mode t nil (auto-indent-mode))
+ '(auto-indent-global-mode t)
  '(auto-indent-on-yank-or-paste nil)
  '(auto-indent-untabify-on-visit-file t)
  '(auto-save-timeout 30)
@@ -1306,7 +1297,7 @@ won't parse the buffer."
  '(cua-read-only-cursor-color "red")
  '(custom-enabled-themes '(doom-spacegrey))
  '(custom-safe-themes
-   '("9b54ba84f245a59af31f90bc78ed1240fca2f5a93f667ed54bbf6c6d71f664ac" "a0be7a38e2de974d1598cf247f607d5c1841dbcef1ccd97cded8bea95a7c7639" "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0" "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8" "80365dd15f97396bdc38490390c23337063c8965c4556b8f50937e63b5e9a65c" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "6d589ac0e52375d311afaa745205abb6ccb3b21f6ba037104d71111e7e76a3fc" "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad" "10461a3c8ca61c52dfbbdedd974319b7f7fd720b091996481c8fb1dded6c6116" "43c808b039893c885bdeec885b4f7572141bd9392da7f0bd8d8346e02b2ec8da" "84da7b37214b4ac095a55518502dfa82633bee74f64daf6e1785322e77516f96" "256bd513a9875cd855077162cdfee8d75b0ad7e18fe8b8cbc10412561fbef892" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" default))
+   '("ae426fc51c58ade49774264c17e666ea7f681d8cae62570630539be3d06fd964" "9b54ba84f245a59af31f90bc78ed1240fca2f5a93f667ed54bbf6c6d71f664ac" "a0be7a38e2de974d1598cf247f607d5c1841dbcef1ccd97cded8bea95a7c7639" "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0" "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8" "80365dd15f97396bdc38490390c23337063c8965c4556b8f50937e63b5e9a65c" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "6d589ac0e52375d311afaa745205abb6ccb3b21f6ba037104d71111e7e76a3fc" "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad" "10461a3c8ca61c52dfbbdedd974319b7f7fd720b091996481c8fb1dded6c6116" "43c808b039893c885bdeec885b4f7572141bd9392da7f0bd8d8346e02b2ec8da" "84da7b37214b4ac095a55518502dfa82633bee74f64daf6e1785322e77516f96" "256bd513a9875cd855077162cdfee8d75b0ad7e18fe8b8cbc10412561fbef892" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" default))
  '(debug-on-error nil)
  '(desktop-path '("~/.emacs.local/"))
  '(desktop-save t)
@@ -1401,9 +1392,8 @@ won't parse the buffer."
  '(global-hungry-delete-mode nil)
  '(global-smart-tab-mode t)
  '(global-subword-mode t)
- '(global-undo-tree-mode t)
  '(global-visual-line-mode t)
- '(global-writeroom-mode nil)
+ '(global-writeroom-mode nil nil (writeroom-mode))
  '(gnutls-algorithm-priority "normal:-vers-tls1.3")
  '(grep-command "grep -2EInir ")
  '(grep-highlight-matches 'auto-detect)
@@ -1454,6 +1444,8 @@ won't parse the buffer."
  '(large-file-warning-threshold 100000000)
  '(ldap-host-parameters-alist
    '(("ldap.cisco.com" base "o=cisco.com" timelimit 10 sizelimit 100)))
+ '(lsp-java-vmargs
+   '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true" "-Xmx4G" "-Xms100m"))
  '(mail-default-directory "~/.emacs.local/")
  '(mail-source-directory "~/.emacs.local/Mail/")
  '(major-mode 'org-mode)
@@ -1483,7 +1475,7 @@ won't parse the buffer."
  '(org-roam-mode t nil (org-roam))
  '(org-startup-indented t)
  '(package-selected-packages
-   '(ido-completing-read+ yasnippet-snippets treemacs-all-the-icons treemacs-icons-dired helm-lsp lsp-ui lsp-treemacs goto-last-change org-roam protobuf-mode rdebug magit hydra treemacs-magit use-package doom-modeline lsp-javascript-typescript lsp-intellij lsp-java lsp-mode iedit doom-themes centered-window dracula-theme color-theme-sanityinc-tomorrow js2-highlight-vars add-node-modules-path js2-refactor tern log4j-mode aggressive-indent markdown-mode ggtags rainbow-delimiters yafolding xml-rpc window-numbering vertica undo-tree toggle-quotes tabulated-list sql-indent smex scss-mode scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+ magit-gh-pulls magit-find-file magit-filenotify key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee flycheck-pyflakes flx-ido fireplace exec-path-from-shell etags-table epc ensime enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single dash-functional ctags-update csv-mode crontab-mode company-shell company-go color-identifiers-mode col-highlight coffee-mode bundler buffer-move browse-kill-ring bm autopair auto-indent-mode anything alchemist ag ack-and-a-half ack ace-jump-mode ac-etags))
+   '(ido-completing-read+ yasnippet-snippets treemacs-all-the-icons treemacs-icons-dired helm-lsp lsp-ui lsp-treemacs goto-last-change org-roam protobuf-mode rdebug magit hydra treemacs-magit use-package doom-modeline lsp-javascript-typescript lsp-intellij lsp-java lsp-mode iedit doom-themes centered-window dracula-theme color-theme-sanityinc-tomorrow js2-highlight-vars add-node-modules-path js2-refactor tern log4j-mode aggressive-indent markdown-mode ggtags rainbow-delimiters yafolding xml-rpc window-numbering vertica toggle-quotes tabulated-list sql-indent smex scss-mode scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+ magit-gh-pulls magit-find-file magit-filenotify key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee flycheck-pyflakes flx-ido fireplace exec-path-from-shell etags-table epc ensime enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single dash-functional ctags-update csv-mode crontab-mode company-shell company-go color-identifiers-mode col-highlight coffee-mode bundler buffer-move browse-kill-ring bm autopair anything alchemist ag ack-and-a-half ack ace-jump-mode ac-etags))
  '(prettier-js-command "prettier")
  '(projectile-cache-file "~/.emacs.local/projectile.cache")
  '(projectile-enable-caching nil)
