@@ -20,3 +20,4 @@ site-lisp/prettier-emacs/
 smex-items*
 transient/
 workspace/
+.dap-breakpoints
