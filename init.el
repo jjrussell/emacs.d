@@ -1248,8 +1248,8 @@ won't parse the buffer."
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
    '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode
-                      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
-                      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
+		      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
+		      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
  '(auto-indent-global-mode t nil (auto-indent-mode))
  '(auto-indent-on-yank-or-paste nil)
  '(auto-indent-untabify-on-visit-file t)
@@ -1272,9 +1272,9 @@ won't parse the buffer."
  '(comment-auto-fill-only-comments t)
  '(company-backends
    '(company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode
-                  company-cmake company-capf
-                  (company-dabbrev-code company-gtags company-etags company-keywords)
-                  company-oddmuse company-files company-dabbrev))
+		  company-cmake company-capf
+		  (company-dabbrev-code company-gtags company-etags company-keywords)
+		  company-oddmuse company-files company-dabbrev))
  '(company-idle-delay 0.5)
  '(completion-ignored-extensions
    '(".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/"
@@ -1420,9 +1420,9 @@ won't parse the buffer."
  '(help-window-select t)
  '(hippie-expand-try-functions-list
    '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name
-                           try-expand-all-abbrevs try-expand-list try-expand-dabbrev
-                           try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
-                           try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+			   try-expand-all-abbrevs try-expand-list try-expand-dabbrev
+			   try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
+			   try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(icicle-mode t)
  '(icicle-show-Completions-initially-flag t)
@@ -1493,28 +1493,27 @@ won't parse the buffer."
  '(org-reverse-note-order t)
  '(org-startup-indented t)
  '(package-selected-packages
-   '(protobuf-mode rdebug magit treemacs hydra treemacs-projectile use-package doom-modeline
-                   smartparens lsp-javascript-typescript lsp-intellij lsp-java lsp-mode iedit
-                   doom-themes centered-window dracula-theme color-theme-sanityinc-tomorrow
-                   js2-highlight-vars add-node-modules-path xref-js2 js2-refactor tern log4j-mode
-                   aggressive-indent markdown-mode yasnippet-snippets ggtags rainbow-delimiters
-                   yaml-mode yafolding xml-rpc writeroom-mode window-numbering wgrep vertica
-                   undo-tree toggle-quotes tabulated-list sql-indent smex smart-tab scss-mode
-                   scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode
-                   real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode
-                   persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+
-                   lua-mode key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu
-                   ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm
-                   haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile
-                   go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine
-                   gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby
-                   flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee
-                   flycheck-pyflakes flx-ido fireplace exec-path-from-shell etags-table epc ensime
-                   enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single
-                   dash-functional ctags-update csv-mode crontab-mode company-shell company-go
-                   color-identifiers-mode col-highlight coffee-mode bundler buffer-move
-                   browse-kill-ring bm autopair auto-indent-mode anything alchemist ag
-                   ack-and-a-half ack ace-jump-mode ac-etags))
+   '(ac-etags ace-jump-mode ack ack-and-a-half add-node-modules-path ag aggressive-indent alchemist
+	      anything auto-indent-mode autopair bm browse-kill-ring buffer-move bundler
+	      centered-window coffee-mode col-highlight color-identifiers-mode
+	      color-theme-sanityinc-tomorrow company-go company-shell crontab-mode csv-mode
+	      ctags-update dash-functional dired-single doom-modeline doom-themes dracula-theme
+	      duplicate-thing ecb edit-server egg embrace emmet-mode enh-ruby-mode ensime epc
+	      etags-table exec-path-from-shell fireplace flx-ido flycheck-pyflakes flymake-coffee
+	      flymake-go flymake-jslint flymake-json flymake-python-pyflakes flymake-ruby
+	      flymake-sass flymake-shell fold-dwim fold-this format-sql fuzzy ggtags gist
+	      git-timemachine github-browse-file gmail-message-mode go-autocomplete go-direx
+	      go-projectile go-scratch go-snippets go-stacktracer groovy-mode haml-mode helm
+	      helm-lsp helm-themes hungry-delete hydra ibuffer-vc ido-ubiquitous ido-vertical-mode
+	      idomenu iedit imenu-anywhere ioccur jira js2-highlight-vars js2-refactor json-mode
+	      jsx-mode key-chord log4j-mode lsp-intellij lsp-java lsp-javascript-typescript lsp-mode
+	      lsp-ui lua-mode magit markdown-mode markdown-mode+ mmm-mode multiple-cursors neotree
+	      osx-plist pager persp-projectile pig-mode pig-snippets pos-tip projectile-rails
+	      protobuf-mode python-mode rainbow-delimiters rbenv rdebug real-auto-save rspec-mode
+	      ruby-block ruby-end ruby-interpolation ruby-tools rvm scala-mode2 scss-mode smart-tab
+	      smartparens smex sql-indent tabulated-list tern toggle-quotes treemacs
+	      treemacs-projectile undo-tree use-package vertica wgrep window-numbering
+	      writeroom-mode xml-rpc xref-js2 yafolding yaml-mode yasnippet-snippets))
  '(prettier-js-command "prettier")
  '(projectile-cache-file "~/.emacs.local/projectile.cache")
  '(projectile-enable-caching nil)
@@ -1601,7 +1600,7 @@ won't parse the buffer."
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
    '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
-          tab-mark))
+	  tab-mark))
  '(window-numbering-auto-assign-0-to-minibuffer t)
  '(window-numbering-mode nil)
  '(writeroom-border-width 0)
@@ -1609,8 +1608,8 @@ won't parse the buffer."
  '(writeroom-fullscreen-effect 'maximized)
  '(writeroom-global-effects
    '(writeroom-set-fullscreen writeroom-set-alpha writeroom-set-menu-bar-lines
-                              writeroom-set-tool-bar-lines writeroom-set-vertical-scroll-bars
-                              writeroom-set-internal-border-width))
+			      writeroom-set-tool-bar-lines writeroom-set-vertical-scroll-bars
+			      writeroom-set-internal-border-width))
  '(writeroom-maximize-window nil)
  '(writeroom-mode-line t)
  '(writeroom-restore-window-config t)
