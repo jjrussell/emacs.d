@@ -1239,14 +1239,17 @@ won't parse the buffer."
  '(ack-and-a-half-executable "/usr/local/bin/ag")
  '(ack-and-a-half-prompt-for-directory t t)
  '(ag-arguments
-   '("--context" "--ignore-dir=log" "--ignore-dir=vendor" "--all-text" "--smart-case" "--nogroup" "--column" "--"))
+   '("--context" "--ignore-dir=log" "--ignore-dir=vendor" "--all-text" "--smart-case" "--nogroup"
+     "--column" "--"))
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
  '(ansi-color-names-vector
    (vector "#839496" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#002b36"))
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
-   '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
+   '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode
+                      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
+                      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
  '(auto-indent-global-mode t nil (auto-indent-mode))
  '(auto-indent-on-yank-or-paste nil)
  '(auto-indent-untabify-on-visit-file t)
@@ -1268,12 +1271,17 @@ won't parse the buffer."
  '(column-highlight-mode nil)
  '(comment-auto-fill-only-comments t)
  '(company-backends
-   '(company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode company-cmake company-capf
-		  (company-dabbrev-code company-gtags company-etags company-keywords)
-		  company-oddmuse company-files company-dabbrev))
+   '(company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode
+                  company-cmake company-capf
+                  (company-dabbrev-code company-gtags company-etags company-keywords)
+                  company-oddmuse company-files company-dabbrev))
  '(company-idle-delay 0.5)
  '(completion-ignored-extensions
-   '(".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/" ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem" ".x86f" ".sparcf" ".fasl" ".ufsl" ".fsl" ".dxl" ".pfsl" ".dfsl" ".p64fsl" ".d64fsl" ".dx64fsl" ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".pyc" ".pyo" ".copyarea.db"))
+   '(".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/"
+     ".hg/" ".git/" ".bzr/" "CVS/" "_darcs/" "_MTN/" ".fmt" ".tfm" ".class" ".fas" ".lib" ".mem"
+     ".x86f" ".sparcf" ".fasl" ".ufsl" ".fsl" ".dxl" ".pfsl" ".dfsl" ".p64fsl" ".d64fsl" ".dx64fsl"
+     ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys"
+     ".pgs" ".tps" ".vrs" ".pyc" ".pyo" ".copyarea.db"))
  '(cperl-break-one-line-blocks-when-indent nil)
  '(cperl-continued-statement-offset 0)
  '(cperl-electric-keywords nil)
@@ -1300,7 +1308,25 @@ won't parse the buffer."
  '(cua-read-only-cursor-color "red")
  '(custom-enabled-themes '(doom-spacegrey))
  '(custom-safe-themes
-   '("6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0" "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8" "80365dd15f97396bdc38490390c23337063c8965c4556b8f50937e63b5e9a65c" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "6d589ac0e52375d311afaa745205abb6ccb3b21f6ba037104d71111e7e76a3fc" "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad" "10461a3c8ca61c52dfbbdedd974319b7f7fd720b091996481c8fb1dded6c6116" "43c808b039893c885bdeec885b4f7572141bd9392da7f0bd8d8346e02b2ec8da" "84da7b37214b4ac095a55518502dfa82633bee74f64daf6e1785322e77516f96" "256bd513a9875cd855077162cdfee8d75b0ad7e18fe8b8cbc10412561fbef892" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" default))
+   '("77fff78cc13a2ff41ad0a8ba2f09e8efd3c7e16be20725606c095f9a19c24d3d"
+     "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0"
+     "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8"
+     "80365dd15f97396bdc38490390c23337063c8965c4556b8f50937e63b5e9a65c"
+     "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983"
+     "6d589ac0e52375d311afaa745205abb6ccb3b21f6ba037104d71111e7e76a3fc"
+     "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad"
+     "10461a3c8ca61c52dfbbdedd974319b7f7fd720b091996481c8fb1dded6c6116"
+     "43c808b039893c885bdeec885b4f7572141bd9392da7f0bd8d8346e02b2ec8da"
+     "84da7b37214b4ac095a55518502dfa82633bee74f64daf6e1785322e77516f96"
+     "256bd513a9875cd855077162cdfee8d75b0ad7e18fe8b8cbc10412561fbef892"
+     "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e"
+     "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d"
+     "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e"
+     "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a"
+     "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016"
+     "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58"
+     "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
+     "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" default))
  '(debug-on-error nil)
  '(desktop-path '("~/.emacs.local/"))
  '(desktop-save t)
@@ -1311,10 +1337,8 @@ won't parse the buffer."
  '(dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$\\|^\\..*")
  '(dired-recursive-deletes 'top)
  '(dired-view-command-alist
-   '(("[.]ps\\'" . "gv -spartan -color")
-     ("[.]pdf\\'" . "xpdf")
-     ("[.]dvi\\'" . "xdvi -sidemargin 0.5 -topmargin 1")
-     ("[.]doc\\'" . "winword")
+   '(("[.]ps\\'" . "gv -spartan -color") ("[.]pdf\\'" . "xpdf")
+     ("[.]dvi\\'" . "xdvi -sidemargin 0.5 -topmargin 1") ("[.]doc\\'" . "winword")
      ("[.]ppt\\'" . "powerpnt")))
  '(dired-x-hands-off-my-keys nil)
  '(ecb-create-layout-file "~/.emacs.d/init/ecb-user-layouts.el")
@@ -1326,25 +1350,20 @@ won't parse the buffer."
  '(ecb-history-menu-user-extension-function 'ignore)
  '(ecb-layout-name "left15")
  '(ecb-layout-window-sizes
-   '(("my-ecb-layout-leftright"
-      (ecb-directories-buffer-name 0.23267326732673269 . 0.9821428571428571)
+   '(("my-ecb-layout-leftright" (ecb-directories-buffer-name 0.23267326732673269 . 0.9821428571428571)
       (ecb-methods-buffer-name 0.23267326732673269 . 0.625)
       (ecb-history-buffer-name 0.23267326732673269 . 0.35714285714285715))
-     ("left15"
-      (ecb-directories-buffer-name 0.3016759776536313 . 0.5760869565217391)
+     ("left15" (ecb-directories-buffer-name 0.3016759776536313 . 0.5760869565217391)
       (ecb-methods-buffer-name 0.3016759776536313 . 0.41304347826086957))
-     ("leftright1"
-      (ecb-directories-buffer-name 0.212707182320442 . 0.5869565217391305)
+     ("leftright1" (ecb-directories-buffer-name 0.212707182320442 . 0.5869565217391305)
       (ecb-sources-buffer-name 0.212707182320442 . 0.043478260869565216)
       (ecb-history-buffer-name 0.212707182320442 . 0.358695652173913)
       (ecb-methods-buffer-name 0.20165745856353592 . 0.9891304347826086))
-     ("leftright2"
-      (ecb-directories-buffer-name 0.143646408839779 . 0.6521739130434783)
+     ("leftright2" (ecb-directories-buffer-name 0.143646408839779 . 0.6521739130434783)
       (ecb-sources-buffer-name 0.143646408839779 . 0.33695652173913043)
       (ecb-methods-buffer-name 0.16298342541436464 . 0.6521739130434783)
       (ecb-history-buffer-name 0.16298342541436464 . 0.33695652173913043))
-     ("left3"
-      (ecb-directories-buffer-name 0.3016759776536313 . 0.29347826086956524)
+     ("left3" (ecb-directories-buffer-name 0.3016759776536313 . 0.29347826086956524)
       (ecb-sources-buffer-name 0.3016759776536313 . 0.34782608695652173)
       (ecb-methods-buffer-name 0.3016759776536313 . 0.34782608695652173))))
  '(ecb-major-modes-show-or-hide '(nil))
@@ -1373,11 +1392,8 @@ won't parse the buffer."
    '("PATH" "MANPATH" "LANG" "LC_CTYPE" "MY_ENG" "MY_ENV" "MY_EMAIL_PERSONAL" "MY_NAME" "GOPATH"))
  '(fci-rule-color "#073642")
  '(file-coding-system-alist
-   '(("\\.elc\\'" emacs-mule . emacs-mule)
-     ("\\(\\`\\|/\\)loaddefs.el\\'" raw-text . raw-text-unix)
-     ("\\.reg\\'" utf-16-le . utf-16-le)
-     ("\\.tar\\'" no-conversion . no-conversion)
-     ("" undecided)))
+   '(("\\.elc\\'" emacs-mule . emacs-mule) ("\\(\\`\\|/\\)loaddefs.el\\'" raw-text . raw-text-unix)
+     ("\\.reg\\'" utf-16-le . utf-16-le) ("\\.tar\\'" no-conversion . no-conversion) ("" undecided)))
  '(fill-column 100)
  '(flx-ido-mode t)
  '(flycheck-color-mode-line-face-to-color 'mode-line-buffer-id)
@@ -1403,7 +1419,10 @@ won't parse the buffer."
  '(grep-use-null-device 'auto-detect)
  '(help-window-select t)
  '(hippie-expand-try-functions-list
-   '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+   '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name
+                           try-expand-all-abbrevs try-expand-list try-expand-dabbrev
+                           try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
+                           try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(icicle-mode t)
  '(icicle-show-Completions-initially-flag t)
@@ -1456,9 +1475,9 @@ won't parse the buffer."
  '(message-directory "~/.emacs.local/Mail/")
  '(minibuffer-auto-raise nil)
  '(mode-line-format
-   '("%e " mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position
-     (vc-mode vc-mode)
-     mode-line-misc-info mode-line-modes mode-line-end-spaces))
+   '("%e " mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified
+     mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   "
+     mode-line-position (vc-mode vc-mode) mode-line-misc-info mode-line-modes mode-line-end-spaces))
  '(mouse-scroll-min-lines 2)
  '(mouse-wheel-progressive-speed t)
  '(neo-autorefresh t)
@@ -1474,13 +1493,36 @@ won't parse the buffer."
  '(org-reverse-note-order t)
  '(org-startup-indented t)
  '(package-selected-packages
-   '(helm-lsp lsp-ui lsp-treemacs goto-last-change protobuf-mode rdebug magit treemacs hydra treemacs-magit treemacs-projectile use-package doom-modeline smartparens lsp-javascript-typescript lsp-intellij lsp-java lsp-mode iedit doom-themes centered-window dracula-theme color-theme-sanityinc-tomorrow js2-highlight-vars add-node-modules-path xref-js2 js2-refactor tern log4j-mode aggressive-indent markdown-mode yasnippet-snippets ggtags rainbow-delimiters yaml-mode yafolding xml-rpc writeroom-mode window-numbering wgrep vertica undo-tree toggle-quotes tabulated-list sql-indent smex smart-tab scss-mode scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+ magit-gh-pulls magit-find-file magit-filenotify lua-mode key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee flycheck-pyflakes flx-ido fireplace exec-path-from-shell etags-table epc ensime enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single dash-functional ctags-update csv-mode crontab-mode company-shell company-go color-identifiers-mode col-highlight coffee-mode bundler buffer-move browse-kill-ring bm autopair auto-indent-mode anything alchemist ag ack-and-a-half ack ace-jump-mode ac-etags))
+   '(protobuf-mode rdebug magit treemacs hydra treemacs-projectile use-package doom-modeline
+                   smartparens lsp-javascript-typescript lsp-intellij lsp-java lsp-mode iedit
+                   doom-themes centered-window dracula-theme color-theme-sanityinc-tomorrow
+                   js2-highlight-vars add-node-modules-path xref-js2 js2-refactor tern log4j-mode
+                   aggressive-indent markdown-mode yasnippet-snippets ggtags rainbow-delimiters
+                   yaml-mode yafolding xml-rpc writeroom-mode window-numbering wgrep vertica
+                   undo-tree toggle-quotes tabulated-list sql-indent smex smart-tab scss-mode
+                   scala-mode2 rvm ruby-tools ruby-interpolation ruby-end ruby-block rspec-mode
+                   real-auto-save rbenv python-mode projectile-rails pos-tip pig-snippets pig-mode
+                   persp-projectile pager osx-plist neotree multiple-cursors mmm-mode markdown-mode+
+                   lua-mode key-chord jsx-mode json-mode jira ioccur imenu-anywhere idomenu
+                   ido-vertical-mode ido-ubiquitous ibuffer-vc hungry-delete helm-themes helm
+                   haml-mode groovy-mode go-stacktracer go-snippets go-scratch go-projectile
+                   go-direx go-autocomplete gmail-message-mode github-browse-file git-timemachine
+                   gist fuzzy format-sql fold-this fold-dwim flymake-shell flymake-sass flymake-ruby
+                   flymake-python-pyflakes flymake-json flymake-jslint flymake-go flymake-coffee
+                   flycheck-pyflakes flx-ido fireplace exec-path-from-shell etags-table epc ensime
+                   enh-ruby-mode emmet-mode embrace egg edit-server ecb duplicate-thing dired-single
+                   dash-functional ctags-update csv-mode crontab-mode company-shell company-go
+                   color-identifiers-mode col-highlight coffee-mode bundler buffer-move
+                   browse-kill-ring bm autopair auto-indent-mode anything alchemist ag
+                   ack-and-a-half ack ace-jump-mode ac-etags))
  '(prettier-js-command "prettier")
  '(projectile-cache-file "~/.emacs.local/projectile.cache")
  '(projectile-enable-caching nil)
  '(projectile-globally-ignored-files '("*.elc" "TAGS"))
  '(projectile-project-root-files
-   '("rebar.config" "project.clj" "pom.xml" "build.sbt" "build.gradle" "Gemfile" "requirements.txt" "package.json" "gulpfile.js" "Gruntfile.js" "bower.json" "composer.json" "Cargo.toml" "mix.exs" "Rakefile"))
+   '("rebar.config" "project.clj" "pom.xml" "build.sbt" "build.gradle" "Gemfile" "requirements.txt"
+     "package.json" "gulpfile.js" "Gruntfile.js" "bower.json" "composer.json" "Cargo.toml" "mix.exs"
+     "Rakefile"))
  '(projectile-remember-window-configs t)
  '(projectile-sort-order 'recently-active)
  '(projectile-switch-project-action 'projectile-commander)
@@ -1512,34 +1554,23 @@ won't parse the buffer."
  '(speedbar-before-visiting-file-hook '(push-mark))
  '(speedbar-default-position 'left-right)
  '(speedbar-frame-parameters
-   '((minibuffer)
-     (width . 50)
-     (border-width . 0)
-     (menu-bar-lines . 0)
-     (tool-bar-lines . 0)
+   '((minibuffer) (width . 50) (border-width . 0) (menu-bar-lines . 0) (tool-bar-lines . 0)
      (unsplittable . t)))
  '(speedbar-indentation-width 2)
  '(speedbar-show-unknown-files t)
  '(speedbar-supported-extension-expressions
-   '(".org" ".[ch]\\(\\+\\+\\|pp\\|c\\|h\\|xx\\)?" ".tex\\(i\\(nfo\\)?\\)?" ".el" ".emacs" ".l" ".lsp" ".p" ".java" ".js" ".f\\(90\\|77\\|or\\)?" ".ad[abs]" ".p[lm]" ".tcl" ".m" ".scm" ".pm" ".py" ".g" ".s?html" ".ma?k" "[Mm]akefile\\(\\.in\\)?" ".rb"))
+   '(".org" ".[ch]\\(\\+\\+\\|pp\\|c\\|h\\|xx\\)?" ".tex\\(i\\(nfo\\)?\\)?" ".el" ".emacs" ".l" ".lsp"
+     ".p" ".java" ".js" ".f\\(90\\|77\\|or\\)?" ".ad[abs]" ".p[lm]" ".tcl" ".m" ".scm" ".pm" ".py"
+     ".g" ".s?html" ".ma?k" "[Mm]akefile\\(\\.in\\)?" ".rb"))
  '(speedbar-use-images t)
  '(speedbar-visiting-file-hook nil)
  '(sql-connection-alist
-   '(("Automation QA"
-      (sql-product 'mysql)
-      (sql-user "jorussell")
-      (sql-server "vitess.hubteamqa.com")
+   '(("Automation QA" (sql-product 'mysql) (sql-user "jorussell") (sql-server "vitess.hubteamqa.com")
       (sql-database "Automation"))
-     ("Automation Platform Prod"
-      (sql-product 'mysql)
-      (sql-user "jorussell")
-      (sql-server "vitess.hubteam.com")
-      (sql-database "AutomationPlatform"))
-     ("Automation Platform QA"
-      (sql-product 'mysql)
-      (sql-user "jorussell")
-      (sql-server "vitess.hubteamqa.com")
-      (sql-database "AutomationPlatform"))))
+     ("Automation Platform Prod" (sql-product 'mysql) (sql-user "jorussell")
+      (sql-server "vitess.hubteam.com") (sql-database "AutomationPlatform"))
+     ("Automation Platform QA" (sql-product 'mysql) (sql-user "jorussell")
+      (sql-server "vitess.hubteamqa.com") (sql-database "AutomationPlatform"))))
  '(stack-trace-on-error nil t)
  '(tags-revert-without-query t)
  '(tail-hide-delay 0)
@@ -1556,24 +1587,10 @@ won't parse the buffer."
  '(uniquify-trailing-separator-p t)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
-   '((20 . "#dc322f")
-     (40 . "#cb4b16")
-     (60 . "#b58900")
-     (80 . "#859900")
-     (100 . "#2aa198")
-     (120 . "#268bd2")
-     (140 . "#d33682")
-     (160 . "#6c71c4")
-     (180 . "#dc322f")
-     (200 . "#cb4b16")
-     (220 . "#b58900")
-     (240 . "#859900")
-     (260 . "#2aa198")
-     (280 . "#268bd2")
-     (300 . "#d33682")
-     (320 . "#6c71c4")
-     (340 . "#dc322f")
-     (360 . "#cb4b16")))
+   '((20 . "#dc322f") (40 . "#cb4b16") (60 . "#b58900") (80 . "#859900") (100 . "#2aa198")
+     (120 . "#268bd2") (140 . "#d33682") (160 . "#6c71c4") (180 . "#dc322f") (200 . "#cb4b16")
+     (220 . "#b58900") (240 . "#859900") (260 . "#2aa198") (280 . "#268bd2") (300 . "#d33682")
+     (320 . "#6c71c4") (340 . "#dc322f") (360 . "#cb4b16")))
  '(vc-annotate-very-old-color nil)
  '(vc-cvs-diff-switches "-up")
  '(vc-diff-switches "-pu")
@@ -1583,14 +1600,17 @@ won't parse the buffer."
  '(whitespace-line-column 150)
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
-   '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab tab-mark))
+   '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
+          tab-mark))
  '(window-numbering-auto-assign-0-to-minibuffer t)
  '(window-numbering-mode nil)
  '(writeroom-border-width 0)
  '(writeroom-disable-fringe t)
  '(writeroom-fullscreen-effect 'maximized)
  '(writeroom-global-effects
-   '(writeroom-set-fullscreen writeroom-set-alpha writeroom-set-menu-bar-lines writeroom-set-tool-bar-lines writeroom-set-vertical-scroll-bars writeroom-set-internal-border-width))
+   '(writeroom-set-fullscreen writeroom-set-alpha writeroom-set-menu-bar-lines
+                              writeroom-set-tool-bar-lines writeroom-set-vertical-scroll-bars
+                              writeroom-set-internal-border-width))
  '(writeroom-maximize-window nil)
  '(writeroom-mode-line t)
  '(writeroom-restore-window-config t)
