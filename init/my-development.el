@@ -497,3 +497,7 @@ Dependent gems:
 
 (provide 'my-development)
 (message "Done loading my-development.el")
+
+;; Local Variables:
+;; byte-compile-warnings: (not free-vars obsolete)
+;; End:

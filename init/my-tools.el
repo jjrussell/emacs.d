@@ -216,13 +216,13 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;; snippets for most modes. Custom snippets go in ~/.emacs.d/snippets
 ;; yasnippet autoloads ~/.emacs.d/snippets
 
-(yas-global-mode 1)
+;; (yas-global-mode 1)
 ;; (yasnippet-snippets-initialize) ; 2022-04-23 this function appears to be gone
 ;; yas-expand is explicitly unbound from TAB as it is at the front of the
 ;; list of hippie-expand functions to try which smart-tab will use.
 ;; hippie-expand is configured in customize
-(define-key yas-minor-mode-map [(tab)] nil)
-(define-key yas-minor-mode-map (kbd "TAB") nil)
+;; (define-key yas-minor-mode-map [(tab)] nil)
+;; (define-key yas-minor-mode-map (kbd "TAB") nil)
 
 ;; make sure we can get to hippie-expand at the normal spot for dabbrev
 ;; in case auto-complete is using tab key
@@ -314,9 +314,9 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;;         (let ((ido-ubiquitous-enable-compatibility nil))
 ;;           ad-do-it))))
 
-(ido-ubiquitous-use-new-completing-read webjump 'webjump)
-(ido-ubiquitous-use-new-completing-read yas/expand 'yasnippet)
-(ido-ubiquitous-use-new-completing-read yas/visit-snippet-file 'yasnippet)
+;; (ido-ubiquitous-use-new-completing-read webjump 'webjump)
+;; (ido-ubiquitous-use-new-completing-read yas/expand 'yasnippet)
+;; (ido-ubiquitous-use-new-completing-read yas/visit-snippet-file 'yasnippet)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -584,8 +584,6 @@ so you have to be in a ruby project that is using bundler or it will bail."
 ;; enable using 'a' in dired buffers to replace the buffer instead of spawning a new one
 (put 'dired-find-alternate-file 'disabled nil)
 
-(require 'dired-single)
-
 ;;redefine dired to use this to make one dired buffer which gets reused
 (defun dired (&optional path)
   (interactive)
@@ -618,3 +616,7 @@ so you have to be in a ruby project that is using bundler or it will bail."
 
 (provide 'my-tools)
 (message "Done loading my-tools.el")
+
+;; Local Variables:
+;; byte-compile-warnings: (not free-vars obsolete)
+;; End:
