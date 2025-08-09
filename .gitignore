@@ -21,3 +21,6 @@ smex-items*
 transient/
 workspace/
 .dap-breakpoints
+.mc-lists.el
+org-persist
+
