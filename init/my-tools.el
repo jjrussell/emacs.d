@@ -1,3 +1,5 @@
+;;; package -- Non-built-in tools config -*- lexical-binding: t; -*-
+;;; Commentary:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This file conatins initialization for third party packages that I have found.
@@ -8,53 +10,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Use package
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(require 'use-package-ensure)
-(setq use-package-always-ensure t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Org roam
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; (use-package org-roam
-;;   :ensure t
-;;   :hook
-;;   (after-init . org-roam-mode)
-;;   :custom
-;;   (org-roam-directory "~/Google Drive/roam/")
-;;   :bind (:map org-roam-mode-map
-;;               (("C-c n l" . org-roam)
-;;                ("C-c n f" . org-roam-find-file)
-;;                ("C-c n g" . org-roam-show-graph))
-;;               :map org-mode-map
-;;               (("C-c n i" . org-roam-insert))
-;;               (("C-c n I" . org-roam-insert-immediate))))
-;; (add-hook 'after-init-hook 'org-roam-mode)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Org roam
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; (use-package org-roam
-;;   :ensure t
-;;   :hook
-;;   (after-init . org-roam-mode)
-;;   :custom
-;;   (org-roam-directory "~/Google Drive/roam/")
-;;   :bind (:map org-roam-mode-map
-;;               (("C-c n l" . org-roam)
-;;                ("C-c n f" . org-roam-find-file)
-;;                ("C-c n g" . org-roam-show-graph))
-;;               :map org-mode-map
-;;               (("C-c n i" . org-roam-insert))
-;;               (("C-c n I" . org-roam-insert-immediate))))
-;; (add-hook 'after-init-hook 'org-roam-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Hydra   definitions
@@ -101,8 +57,8 @@
   ("o" my-occur-all-buffers "occur all buffers")
   
   ("!" shell-command "shell-command" :column "Utilities")
-  ( "a" ack "ack")
-  ("y" paste-stack-in-project "paste-stack-in-project")  
+  ("a" projectile-ag "ag")
+  ("y" paste-stack-in-project "paste-stack-in-project")
   ("M-t" toggle-window-dedicated "toggle-window-dedicated")
   ("n" my-truncate-toggle "toggle truncate lines")
   ("1" my-open-terminal-here "open terminal cwd")
@@ -194,6 +150,15 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   :bind ("C-," . embrace-commander))
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Replaces auto-indent
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+(global-aggressive-indent-mode 1)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; github-browse-at-point
@@ -281,23 +246,26 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 (use-package smex
   :bind ("M-x" . smex))
 
+(use-package ido
+  :ensure nil ; ido is built-in
+  :config
+  (ido-mode 1)  ; actually I kind of like it with file
+  (ido-everywhere 1)
+  (ido-vertical-mode 1)
+  (flx-ido-mode 1) ; fuzzy matching for ido https://github.com/lewang/flx
+  :custom
+  (ido-create-new-buffer 'prompt)
+  (ido-enable-flex-matching t) ;; disable ido faces to see flx highlights.
+  (ido-use-faces t)
+  (ido-max-window-height 30)) 
 
-(ido-mode 1)    ; actually I kind of like it with file
-(ido-everywhere 1)
+
 ;; use ido absolutely everywhere where completing-read would be
 ;; 2022-04-23 stopped working https://github.com/mrkkrp/ido-ubiquitous
 ;; doesn't appear to be in melpa. Forked from DarwinAwardWinner/ido-completing-read-plus
 ;; which I have installed so this is likely abandoned. 
 ;; (ido-ubiquitous-mode 1) 
-(ido-vertical-mode 1) ; default is horizontal. Not sure which I like better
-;; ido-vertical mode needs more space. With horizontal ido 3 is good
-(setq ido-max-window-height 30)
 
-;;(require 'flx-ido)
-(flx-ido-mode 1) ; fuzzy matching for ido https://github.com/lewang/flx
-;; disable ido faces to see flx highlights.
-(setq ido-enable-flex-matching t)
-(setq ido-use-faces t)
 
 (define-key global-map [(control x)(control b)] 'ibuffer)
 (global-set-key [(control x) (b)] 'ido-switch-buffer)
@@ -324,14 +292,27 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 (use-package projectile
+  :ensure t
+  :init (projectile-mode +1)
   :bind-keymap
   ("C-c p" . projectile-command-map)
-  :bind (
-         ;; projectile tag doesn't seem to udpate the tags in ido
-	 ("M-." . projectile-find-tag)
-	 ("M-p" . projectile-find-file)
-	 ("M-t" . imenu-anywhere)
-	 ("M-*" . pop-tag-mark)))
+  :bind (("M-." . projectile-find-tag)
+         ("M-p" . projectile-find-file)
+         ("M-t" . imenu-anywhere)
+         ("M-*" . pop-tag-mark))
+  :custom
+  (projectile-cache-file "~/.emacs.local/projectile.cache")
+  (projectile-enable-caching nil)
+  (projectile-globally-ignored-files '("*.elc" "TAGS"))
+  (projectile-remember-window-configs t)
+  (projectile-sort-order 'recently-active)
+  (projectile-switch-project-action 'projectile-commander)
+  (projectile-tags-backend 'find-tag)
+  ;; You have a very extensive list of root files, this keeps it neat
+  (projectile-project-root-files
+   '("rebar.config" "project.clj" "pom.xml" "build.sbt" "build.gradle" "Gemfile" "requirements.txt"
+     "package.json" "gulpfile.js" "Gruntfile.js" "bower.json" "composer.json" "Cargo.toml" "mix.exs"
+     "Rakefile")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -393,31 +374,8 @@ at point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Ack - using ack-and-a-half  https://github.com/jhelwig/ack-and-a-half
-;;
+;; Use projectile-ag instead
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Create shorter aliases for autoloaded ack-and-a-half functions
-(defalias 'ack 'ack-and-a-half)
-(defalias 'ack-same 'ack-and-a-half-same)
-(defalias 'ack-find-file 'ack-and-a-half-find-file)
-(defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
-(setq ack-and-a-half-prompt-for-directory 't)
-
-(defun ack-gem (pattern &optional regexp gem)
-  "ack for pattern in the gem specified.  The gem is found by using 'bundle show'
-so you have to be in a ruby project that is using bundler or it will bail."
-  (interactive
-   (let ((regexp t))
-     (list (ack-and-a-half-read regexp)
-           regexp
-           (read-string "name of gem to search: "))))
-
-  (let ((directory '(substring (shell-command-to-string (concat "ls -d " (getenv "GEM_HOME") "/gems/" gem "* | head -1" )) 0 -1 )))
-    (cond ((not (file-exists-p directory))
-           (message (concat "Could not search for gem " gem " in directory " directory)))
-          ((file-exists-p directory) (ack-and-a-half pattern t directory)))
-
-    ))
-(define-key global-map [(meta F)] 'ack)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -427,14 +385,22 @@ so you have to be in a ruby project that is using bundler or it will bail."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 ;;brings some sanity to the page up page down commands as well as one line scolling
-(require 'pager)
-(global-set-key [(control v)] 'pager-page-down)
-(global-set-key [next]  'pager-page-down)
-(global-set-key [(meta v)] 'pager-page-up)
-(global-set-key [prior] 'pager-page-up)
-(global-set-key [(control q)] 'pager-row-up)
-(global-set-key [(control z)] 'pager-row-down)
-(global-set-key [(control Q)] 'quoted-insert)
+(use-package pager
+  :ensure t
+  :bind (("C-v" . pager-page-down)
+         ("<next>" . pager-page-down)
+         ("M-v" . pager-page-up)
+         ("<prior>" . pager-page-up)
+         ("C-q" . pager-row-up)
+         ("C-z" . pager-row-down)))
+;; (require 'pager)
+;; (global-set-key [(control v)] 'pager-page-down)
+;; (global-set-key [next]  'pager-page-down)
+;; (global-set-key [(meta v)] 'pager-page-up)
+;; (global-set-key [prior] 'pager-page-up)
+;; (global-set-key [(control q)] 'pager-row-up)
+;; (global-set-key [(control z)] 'pager-row-down)
+;; (global-set-key [(control Q)] 'quoted-insert)
 
 
 ;; multiple cursor mode
@@ -463,7 +429,14 @@ so you have to be in a ruby project that is using bundler or it will bail."
 (global-set-key "\M-y" 'my-yank-pop)
 
 ;; better duplicate buffer name handling
-(require 'uniquify)
+(use-package uniquify
+  :ensure nil
+  :config
+  ;; uniquify-buffer-name-style is not a defcustom, so we use :config
+  (setq uniquify-buffer-name-style 'forward)
+  :custom
+  (uniquify-min-dir-content 1)
+  (uniquify-trailing-separator-p t))
 
 (require 'newcomment) ;; loads stuff for my cool comment block function my-comment-block
 
@@ -494,7 +467,21 @@ so you have to be in a ruby project that is using bundler or it will bail."
 (global-set-key (kbd "C-'") 'toggle-quotes)
 
 ;; Distraction free writing
-(global-set-key (kbd "C-M-j") 'writeroom-mode)
+(use-package writeroom-mode
+  :ensure t
+  :bind (("C-M-j" . writeroom-mode))
+  :custom
+  (writeroom-fullscreen-effect 'maximized)
+  (writeroom-width 150)
+  (writeroom-restore-window-config t)
+  (writeroom-mode-line t)
+  (writeroom-border-width 0)
+  (writeroom-global-effects
+   '(writeroom-set-fullscreen writeroom-set-alpha writeroom-set-menu-bar-lines
+			      writeroom-set-tool-bar-lines
+			      writeroom-set-vertical-scroll-bars
+			      writeroom-set-internal-border-width))
+  (writeroom-disable-fringe t))
 
 ;; perspective
 ;; if perspective mode is enabled either by customize or in any other file it causes weird errors with
@@ -503,25 +490,24 @@ so you have to be in a ruby project that is using bundler or it will bail."
 
 ;; Takes over these keys to let you type them fast in succesion to perform commands.
 ;; Using common keys can result in a slight delay on the lead key but mostly I've never noticed this
-(key-chord-mode 1)
-(key-chord-define-global ",." "<>\C-b")
-(key-chord-define-global "xx" 'smex) ; M-x replacement
-(key-chord-define-global "hh" 'switch-to-previous-buffer)
+(use-package key-chord
+  :ensure t
+  :config
+  (key-chord-mode 1)
+  (key-chord-define-global ",." "<>\C-b")
+  (key-chord-define-global "xx" 'smex)
+  (key-chord-define-global "hh" 'switch-to-previous-buffer))
 ;; What other ones would be useful?
 
 ;; incremental occur awesomeness
 (global-set-key (kbd "M-s i") 'ioccur)
 
-;; Oh speedbar. How I wish you were useful
-(define-key global-map [(f6)] 'projectile-speedbar-toggle)
-
 ;; visible bookmarks
-(autoload 'bm-toggle   "bm" "Toggle bookmark in current buffer." t)
-(autoload 'bm-next     "bm" "Goto bookmark."                     t)
-(autoload 'bm-previous "bm" "Goto previous bookmark."            t)
-(global-set-key (kbd "<C-f2>") 'bm-toggle) ; new bookmark
-(global-set-key (kbd "<f2>")   'bm-next)
-(global-set-key (kbd "<S-f2>") 'bm-previous)
+(use-package bm
+  :ensure t
+  :bind (("<C-f2>" . bm-toggle)
+         ("<f2>"   . bm-next)
+         ("<S-f2>" . bm-previous)))
 
 ;; buffer-move - Move buffers to other open windows by direction
 ;; On the mac, C-up/down/left/right switches desktops
@@ -537,16 +523,12 @@ so you have to be in a ruby project that is using bundler or it will bail."
 ;; Acejump mode - marking words for direct jumping
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(autoload
-  'ace-jump-mode-pop-mark
-  "ace-jump-mode"
-  "Ace jump back:-)"
-  t)
-(eval-after-load 'ace-jump-mode
-  '(ace-jump-mode-enable-mark-sync))
-
-(define-key global-map (kbd "C-c SPC") 'ace-jump-mode)
-(define-key global-map (kbd "C-x SPC") 'ace-jump-mode-pop-mark)
+(use-package ace-jump-mode
+  :ensure t
+  :bind (("C-c SPC" . ace-jump-mode)
+         ("C-x SPC" . ace-jump-mode-pop-mark))
+  :config
+  (ace-jump-mode-enable-mark-sync))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -574,44 +556,44 @@ so you have to be in a ruby project that is using bundler or it will bail."
 ;; Dired config
 ;; package to make dired not suck.  It reuses one window instead of
 ;; spawning 5x10^56 new dired buffers
-;;
+;; 2025-08-11 commented out. I don't use this anymore
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'dired-load-hook
-          (lambda ()
-            (load "dired-x")
-            ))
+;; (add-hook 'dired-load-hook
+;;           (lambda ()
+;;             (load "dired-x")
+;;             ))
 
-;; enable using 'a' in dired buffers to replace the buffer instead of spawning a new one
-(put 'dired-find-alternate-file 'disabled nil)
+;; ;; enable using 'a' in dired buffers to replace the buffer instead of spawning a new one
+;; (put 'dired-find-alternate-file 'disabled nil)
 
-;;redefine dired to use this to make one dired buffer which gets reused
-(defun dired (&optional path)
-  (interactive)
-  (dired-single-magic-buffer path))
+;; ;;redefine dired to use this to make one dired buffer which gets reused
+;; (defun dired (&optional path)
+;;   (interactive)
+;;   (dired-single-magic-buffer path))
 
-(defun my-dired-single-hook ()
-  "Bunch of stuff to run for dired, either immediately or when it's
-         loaded."
-  (define-key dired-mode-map [return] 'dired-single-buffer)
-  (define-key dired-mode-map [mouse-1] 'dired-single-buffer-mouse)
-  (define-key dired-mode-map [?^]
-    (function (lambda nil (interactive)(dired-single-buffer ".."))))
-  )
+;; (defun my-dired-single-hook ()
+;;   "Bunch of stuff to run for dired, either immediately or when it's
+;;          loaded."
+;;   (define-key dired-mode-map [return] 'dired-single-buffer)
+;;   (define-key dired-mode-map [mouse-1] 'dired-single-buffer-mouse)
+;;   (define-key dired-mode-map [?^]
+;;     (function (lambda nil (interactive)(dired-single-buffer ".."))))
+;;   )
 
-;; if dired's already loaded, then the keymap will be bound
-(if (boundp 'dired-mode-map)
-    ;; we're good to go; just add our bindings
-    (my-dired-single-hook)
-  ;; it's not loaded yet, so add our bindings to the load-hook
-  (add-hook 'dired-load-hook 'my-dired-single-hook))
+;; ;; if dired's already loaded, then the keymap will be bound
+;; (if (boundp 'dired-mode-map)
+;;     ;; we're good to go; just add our bindings
+;;     (my-dired-single-hook)
+;;   ;; it's not loaded yet, so add our bindings to the load-hook
+;;   (add-hook 'dired-load-hook 'my-dired-single-hook))
 
-;;Remap dired keybindings to dired-single replacement functions
-(global-set-key [(f5)] 'dired-single-magic-buffer)
-(global-set-key [(control f5)] (function
-                                (lambda nil (interactive)
-                                  (dired-single-magic-buffer
-                                   default-directory))))
-(global-set-key [(shift f5)] 'dired-single-toggle-buffer-name)
+;; ;;Remap dired keybindings to dired-single replacement functions
+;; (global-set-key [(f5)] 'dired-single-magic-buffer)
+;; (global-set-key [(control f5)] (function
+;;                                 (lambda nil (interactive)
+;;                                   (dired-single-magic-buffer
+;;                                    default-directory))))
+;; (global-set-key [(shift f5)] 'dired-single-toggle-buffer-name)
 
 
 (provide 'my-tools)

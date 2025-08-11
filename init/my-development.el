@@ -7,16 +7,12 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(global-aggressive-indent-mode 1)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; git support
 ;; Mosty use a combination of egg and magit with their default settings
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;(require-try 'egg)
-;;(require-try 'vc-git) ; meh
 (use-package magit
   :commands magit-status)
 
@@ -34,7 +30,18 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;; default auto-completion for lsp-mode
-(use-package company :ensure t)
+(use-package company
+  :ensure t
+  :hook (prog-mode . company-mode) ; Only activate for programming modes
+  :custom
+  (company-idle-delay 0.5)
+  ;; I've removed the eclim and xcode backends that were causing errors
+  (company-backends
+   '(company-bbdb company-nxml company-css company-semantic company-clang
+                  company-cmake company-capf
+                  (company-dabbrev-code company-gtags company-etags company-keywords)
+                  company-oddmuse company-files company-dabbrev)))
+
 (use-package yasnippet :config (yas-global-mode))
 (use-package yasnippet-snippets :ensure t)
 (use-package flycheck :ensure t :init (global-flycheck-mode))
@@ -91,49 +98,56 @@
 ;; Go
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(defun my-go-mode-hook ()
-  "My go mode hook."
-  (add-hook 'before-save-hook 'gofmt-before-save) ; Call Gofmt before saving
-  (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)
-  ;; Godef jump key binding                                                      
-  ;; godef requires go get github.com/rogpeppe/godef
-  (local-set-key (kbd "M-.") 'godef-jump)
-  (flycheck-mode)
+;; In my-development.el
+;; Make sure you have the Go LSP server installed: go install
+;; golang.org/x/tools/gopls@latest
+(use-package go-mode
+  :ensure t
+  :hook (go-mode . lsp))
 
-  (set (make-local-variable 'company-backends) '(company-go))
-  (company-mode)
-  
-  (setq compile-command "go build -v && go test -v && go vet")
-  (define-key (current-local-map) "\C-c\C-c" 'compile)
-  (go-eldoc-setup)
-  (setq gofmt-command "goimports")
+;; Non-LSP go mode config
+;; (defun my-go-mode-hook ()
+;;   "My go mode hook."
+;;   (add-hook 'before-save-hook 'gofmt-before-save) ; Call Gofmt before saving
+;;   (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)
+;;   ;; Godef jump key binding                                                      
+;;   ;; godef requires go get github.com/rogpeppe/godef
+;;   (local-set-key (kbd "M-.") 'godef-jump)
+;;   (flycheck-mode)
 
-  ;; for some reason GOPATH isn't getting caught when this runs in
-  ;; init.el
-  (exec-path-from-shell-initialize)
-  )
+;;   (set (make-local-variable 'company-backends) '(company-go))
+;;   (company-mode)
 
-(add-hook 'go-mode-hook 'my-go-mode-hook)
+;;   (setq compile-command "go build -v && go test -v && go vet")
+;;   (define-key (current-local-map) "\C-c\C-c" 'compile)
+;;   (go-eldoc-setup)
+;;   (setq gofmt-command "goimports")
+
+;;   ;; for some reason GOPATH isn't getting caught when this runs in
+;;   ;; init.el
+;;   (exec-path-from-shell-initialize)
+;;   )
+
+;; (add-hook 'go-mode-hook 'my-go-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Ruby
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq default-ruby-version "2.1.5")
+(use-package rspec-mode
+  :ensure t
+  :hook (ruby-mode . rspec-mode)
+  :custom
+  (rspec-command-options "--format documentation --drb")
+  (rspec-use-bundler-when-possible nil)
+  (rspec-use-rake-when-possible nil)
+  (rspec-use-rvm t))
 
 (defun my-ruby-mode-hook ()
-  (interactive)
   (setq require-final-newline nil)
-  (require 'rspec-mode)
   (auto-fill-mode -1)
 
-  ;; rsense suddenly got unstable 2013-09-07 would hang on autocomplete
-  ;; (setq rsense-home (concat my-site-lisp-dir "/rsense-0.3"))
-  ;; (add-to-list 'load-path (concat rsense-home "/etc"))
-  ;; (require 'rsense)
-  ;; (add-to-list 'ac-sources 'ac-source-rsense-method)
-  ;; (add-to-list 'ac-sources 'ac-source-rsense-constant)
   (ruby-end-mode)
   (require 'ruby-interpolation) ; electric #{} in ruby strings by entering #
 
@@ -144,10 +158,7 @@
   (setq ruby-block-highlight-toggle 'overlay) ; other option is minibuffer or t for both
 
   (local-set-key "\r" 'newline-and-indent)
-  (flymake-ruby-load)
   
-  (ac-etags-setup)
-  (ac-etags-ac-setup)
   ;; emacs ruby mode defaut is global but (default) is the default in rvm now
   (setq rvm--gemset-default "(default)")
 
@@ -293,7 +304,7 @@ Dependent gems:
          (create-boilerplate))))
 
 (add-hook 'sh-mode-hook 'my-sh-mode-hook)
-(add-hook 'sh-set-shell-hook 'flymake-shell-load)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Emacs lisp
@@ -342,12 +353,9 @@ Dependent gems:
 
      (add-hook 'js2-mode-hook (lambda ()
                                 (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
-
      (add-hook 'rjsx-mode-hook (lambda ()
                                  (add-node-modules-path)
                                  (setenv "PATH" (mapconcat 'identity exec-path ":"))))
-     (require 'prettier-js)
-     (add-hook 'rjsx-mode-hook #'prettier-js-mode)
      (add-hook 'rjsx-mode-hook (lambda ()
                                  (js2-highlight-vars-mode)
                                  ;; don't let highlight mode clobber my useful keybindings with their silly nonesense
@@ -358,16 +366,6 @@ Dependent gems:
      (define-key js-mode-map (kbd "≥") 'js2-jump-to-definition) ; alt-. on mac. Duplicate to be consistent with intellij
      (define-key js-mode-map [(control meta .)] 'xref-find-definitions) ; backup to js2-jump-to-definition
      )) 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; CSS & SCSS
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; cool but compiles sass and scss which litters build artifacts in git
-;; (add-hook 'sass-mode-hook 'flymake-sass-load)
-;; (add-hook 'scss-mode-hook 'flymake-sass-load)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
