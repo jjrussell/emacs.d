@@ -142,7 +142,6 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 (use-package treemacs
   :ensure t
   :bind
-  ;; Bind F8 to toggle treemacs
   ("<f8>" . treemacs-select-window))
 
 
