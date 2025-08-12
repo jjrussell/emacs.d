@@ -1,4 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; -*- lexical-binding: t; -*-
 ;;
 ;; emacs customizations
 ;;
@@ -22,8 +22,8 @@
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
    '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode
-		      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
-		      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
+                      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
+                      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
  '(auto-indent-on-yank-or-paste nil)
  '(auto-indent-untabify-on-visit-file t)
  '(auto-save-timeout 30)
@@ -52,9 +52,10 @@
  '(cua-normal-cursor-color "green")
  '(cua-prefix-override-inhibit-delay 1)
  '(cua-read-only-cursor-color "red")
- '(custom-enabled-themes '(doom-spacegrey))
  '(custom-safe-themes
-   '("77fff78cc13a2ff41ad0a8ba2f09e8efd3c7e16be20725606c095f9a19c24d3d"
+   '("d97ac0baa0b67be4f7523795621ea5096939a47e8b46378f79e78846e0e4ad3d"
+     "aec7b55f2a13307a55517fdf08438863d694550565dee23181d2ebd973ebd6b8"
+     "77fff78cc13a2ff41ad0a8ba2f09e8efd3c7e16be20725606c095f9a19c24d3d"
      "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0"
      "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8"
      "80365dd15f97396bdc38490390c23337063c8965c4556b8f50937e63b5e9a65c"
@@ -122,9 +123,9 @@
  '(help-window-select t)
  '(hippie-expand-try-functions-list
    '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name
-			   try-expand-all-abbrevs try-expand-list try-expand-dabbrev
-			   try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
-			   try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+                           try-expand-all-abbrevs try-expand-list try-expand-dabbrev
+                           try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
+                           try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(icicle-mode t)
  '(icicle-show-Completions-initially-flag t)
@@ -161,23 +162,25 @@
  '(org-reverse-note-order t)
  '(org-startup-indented t)
  '(package-selected-packages
-   '(ac-etags ace-jump-mode ack add-node-modules-path ag aggressive-indent alchemist auto-indent-mode
-	      bm browse-kill-ring buffer-move bundler centered-window coffee-mode
-	      color-identifiers-mode color-theme-sanityinc-tomorrow company-go company-shell
-	      crontab-mode csv-mode ctags-update dash-functional doom-modeline doom-themes
-	      dracula-theme duplicate-thing ecb edit-server egg embrace emmet-mode enh-ruby-mode epc
-	      exec-path-from-shell fireplace flx-ido flycheck-pyflakes fold-dwim fold-this
-	      format-sql fuzzy ggtags gist git-timemachine github-browse-file gmail-message-mode
-	      go-autocomplete go-direx go-projectile go-scratch go-stacktracer groovy-mode haml-mode
-	      helm helm-lsp hungry-delete hydra ibuffer-vc ido-vertical-mode idomenu iedit
-	      imenu-anywhere ioccur jira js2-highlight-vars js2-refactor json-mode key-chord
-	      log4j-mode lsp-intellij lsp-java lsp-mode lsp-ui lua-mode magit markdown-mode mmm-mode
-	      multiple-cursors neotree osx-plist pager persp-projectile pig-mode pig-snippets
-	      pos-tip prettier-js projectile-rails protobuf-mode python-mode rainbow-delimiters
-	      rbenv real-auto-save rspec-mode ruby-end ruby-interpolation ruby-tools rvm scss-mode
-	      smart-tab smartparens smex sql-indent tern toggle-quotes treemacs treemacs-projectile
-	      undo-tree uniquify use-package vertica wgrep window-numbering writeroom-mode xml-rpc
-	      xref-js2 yafolding yaml-mode yasnippet-snippets))
+   '(ac-etags ace-jump-mode ack add-node-modules-path ag aggressive-indent alchemist all-the-icons
+              all-the-icons-completion all-the-icons-dired all-the-icons-ibuffer auto-indent-mode bm
+              browse-kill-ring buffer-move bundler centered-window coffee-mode
+              color-identifiers-mode color-theme-sanityinc-tomorrow company-go company-shell
+              crontab-mode csv-mode ctags-update dash-functional doom-modeline doom-themes
+              dracula-theme duplicate-thing ecb edit-server egg embrace emmet-mode enh-ruby-mode epc
+              exec-path-from-shell fireplace flx-ido flycheck-pyflakes fold-dwim fold-this
+              format-sql fuzzy ggtags gist git-timemachine github-browse-file gmail-message-mode
+              go-autocomplete go-direx go-projectile go-scratch go-stacktracer groovy-mode haml-mode
+              helm helm-lsp hungry-delete hydra ibuffer-vc ido-vertical-mode idomenu iedit
+              imenu-anywhere ioccur jira js2-highlight-vars js2-refactor json-mode key-chord
+              log4j-mode lsp-intellij lsp-java lsp-mode lsp-ui lua-mode magit markdown-mode mmm-mode
+              multiple-cursors neotree nerd-icons-completion nerd-icons-dired nerd-icons-grep
+              nerd-icons-ibuffer osx-plist pager persp-projectile pig-mode pig-snippets pos-tip
+              prettier-js projectile-rails protobuf-mode python-mode rainbow-delimiters rbenv
+              real-auto-save rspec-mode ruby-end ruby-interpolation ruby-tools rvm scss-mode
+              smart-tab smartparens smex sql-indent tern toggle-quotes treemacs treemacs-projectile
+              undo-tree uniquify use-package vertica wgrep window-numbering writeroom-mode xml-rpc
+              xref-js2 yafolding yaml-mode yasnippet-snippets))
  '(ps-line-number t)
  '(ps-line-number-color 50)
  '(python-indent-offset 4 t)
@@ -229,7 +232,7 @@
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
    '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
-	  tab-mark))
+          tab-mark))
  '(window-numbering-auto-assign-0-to-minibuffer t)
  '(window-numbering-mode nil))
 (custom-set-faces

@@ -52,10 +52,6 @@
   :bind (:map lsp-mode-map
               ("M-9" . lsp-treemacs-errors-list)))
 
-(use-package treemacs
-  :ensure t
-  :commands (treemacs)
-  :after (lsp-mode))
 (use-package lsp-ui
   :ensure t
   :after (lsp-mode)

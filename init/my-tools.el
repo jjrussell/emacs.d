@@ -132,14 +132,37 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;; 
 (global-set-key (kbd "C-x m") 'hydra-projectile/body)
 
-;; https://github.com/hlissner/emacs-doom-themes
-;; Enable custom neotree theme (all-the-icons must be installed!)
-(doom-themes-neotree-config)
-;; or for treemacs users
-(doom-themes-treemacs-config)
+(use-package org
+  :ensure nil ; org is built-in, no need to install
+  :hook
+  (org-mode . (lambda ()
+                ;; Org mode parser requires a tab-width of 8
+                (setq-local tab-width 8))))
 
-;; Corrects (and improves) org-mode's native fontification.
-(doom-themes-org-config)
+(use-package treemacs
+  :ensure t
+  :bind
+  ;; Bind F8 to toggle treemacs
+  ("<f8>" . treemacs-select-window))
+
+
+;; https://github.com/hlissner/emacs-doom-themes
+;; Enable custom neotree theme (nerd-icons must be installed!)
+;; Make sure nerd-icons is installed
+(use-package nerd-icons
+  :ensure t)
+
+;; Configure doom-themes
+(use-package doom-themes
+  :ensure t
+  :config
+  ;; This is the crucial part: load your chosen theme AFTER the package is loaded.
+  (load-theme 'doom-solarized-dark t)
+
+  ;; The treemacs and org integrations are now handled by separate functions.
+  ;; Call the ones you need here.
+  (doom-themes-treemacs-config) ;; For Treemacs
+  (doom-themes-org-config))     ;; For Org Mode
 
 ;; Colorize nested braces and things
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)

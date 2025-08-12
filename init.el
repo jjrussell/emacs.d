@@ -176,7 +176,11 @@
 
 (global-set-key (kbd "M-r") 'replace-string)
 (global-set-key (kbd "M-g") 'goto-line)
-(global-set-key (kbd "C-S-k") 'kill-this-buffer)
+
+(global-set-key (kbd "C-S-k")
+                (lambda ()
+		  (interactive)
+		  (kill-this-buffer nil)))
 (global-set-key (kbd "C-c q") 'auto-fill-mode) ; toggle auto-fill-mode
 (global-set-key (kbd "M-`") 'other-frame) ; mac-like frame switching behavior
 (global-set-key (kbd "M-1") 'other-window) ; alt-tab for buffer windows. 
