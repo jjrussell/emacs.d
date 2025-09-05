@@ -1226,11 +1226,11 @@ won't parse the buffer."
 		     (if (equal output "t\n")
 			 ;; A server is already running, so do nothing.
 			 ;; The old message is kept here for debugging.
-			 ;; (message "Not starting server, one instance already running.")
-			 (progn
-			   ;; No server is running, so start one.
-			   ;; (message "Starting emacs server...")
-			   (server-start))))
+                         (message "Not starting server, one instance already running.")
+		       (progn
+			 ;; No server is running, so start one.
+                         (message "Starting emacs server...")
+			 (server-start))))
 		   )))
 	       )
 	 ;; loading and customization for third party packages, elpa and otherwise
