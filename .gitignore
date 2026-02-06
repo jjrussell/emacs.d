@@ -24,3 +24,7 @@ workspace/
 .mc-lists.el
 org-persist
 etc
+.DS_Store
+*.~undo-tree~
+*~
+.claude/
