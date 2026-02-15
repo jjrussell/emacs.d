@@ -440,7 +440,7 @@ at point."
   :ensure t
   :bind (("C-v" . pager-page-down)
          ("<next>" . pager-page-down)
-         ("M-v" . pager-page-up)
+         ("S-v" . pager-page-up)
          ("<prior>" . pager-page-up)
          ("C-q" . pager-row-up)
          ("C-z" . pager-row-down)))

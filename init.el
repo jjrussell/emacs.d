@@ -1191,11 +1191,11 @@ won't parse the buffer."
 		;; Use default macOS Emacs key mapping:
 		;; Option = Meta, Command = Super
 		;; This allows speech-to-text tools (Cmd+V) to work without conflicts
-		(setq mac-option-modifier 'meta)
-		(setq mac-command-modifier 'super)
+		(setq mac-command-modifier 'meta)
+		(setq mac-options-modifier 'super)
 
 		;; Bind Cmd+V to paste for speech-to-text tools
-		(global-set-key (kbd "s-v") 'yank)
+		(global-set-key (kbd "M-v") 'yank)
 
 		;; use spotlight instead of locate command to find stuff
 		(setq locate-command "mdfind")
@@ -1234,6 +1234,7 @@ won't parse the buffer."
 		       (progn
 			 ;; No server is running, so start one.
                          (message "Starting emacs server...")
+                         (setq server-auth-dir (expand-file-name "server" user-emacs-directory))
 			 (server-start))))
 		   )))
 	       )
