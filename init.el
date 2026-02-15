@@ -1184,23 +1184,27 @@ won't parse the buffer."
 	        (setenv "PATH" (mapconcat 'identity exec-path ":"))
 	        (setenv "LANG" "en_US.UTF-8")
 	        (setenv "LC_CTYPE" "en_US.UTF-8")
-                
+
 		;; actually makes the command key behave on the mac. Its awesome
 		;; most of this good stuff is found at
 		;; http://lojic.com/blog/2010/03/17/switching-from-carbonemacs-to-emacs-app/
-		(setq mac-command-modifier 'meta)
-		(setq mac-option-modifier nil)
+		;; Use default macOS Emacs key mapping:
+		;; Option = Meta, Command = Super
+		;; This allows speech-to-text tools (Cmd+V) to work without conflicts
+		(setq mac-option-modifier 'meta)
+		(setq mac-command-modifier 'super)
+
+		;; Bind Cmd+V to paste for speech-to-text tools
+		(global-set-key (kbd "s-v") 'yank)
 
 		;; use spotlight instead of locate command to find stuff
 		(setq locate-command "mdfind")
 
 		;; this puts windows in the background on the mac
-		;; who needs mark paragraph anyway?
-		(global-set-key (kbd "M-h") 'ns-do-hide-emacs)
+		(global-set-key (kbd "s-h") 'ns-do-hide-emacs)
 
-		;; I want this back to switch between emacs windows
-		;; it was mapped to tmm-menubar.  Whatever
-		(global-set-key [?\M-`] 'other-frame)
+		;; switch between emacs windows with Cmd+`
+		(global-set-key (kbd "s-`") 'other-frame)
 
 		;; if emacs is launched from spotlight or quicksilver it gets the
 		;; default-directory / which is useless. Set it to home.
