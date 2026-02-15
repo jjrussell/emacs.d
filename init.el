@@ -1201,7 +1201,7 @@ won't parse the buffer."
 		(setq locate-command "mdfind")
 
 		;; this puts windows in the background on the mac
-		(global-set-key (kbd "s-h") 'ns-do-hide-emacs)
+		(global-set-key (kbd "M-h") 'ns-do-hide-emacs)
 
 		;; switch between emacs windows with Cmd+`
 		(global-set-key (kbd "s-`") 'other-frame)
