@@ -438,12 +438,12 @@ at point."
 ;;brings some sanity to the page up page down commands as well as one line scolling
 (use-package pager
   :ensure t
-  :bind (("C-v" . pager-page-down)
-         ("<next>" . pager-page-down)
-         ("S-v" . pager-page-up)
-         ("<prior>" . pager-page-up)
-         ("C-q" . pager-row-up)
-         ("C-z" . pager-row-down)))
+  :bind* (("C-v" . pager-page-down)
+          ("<next>" . pager-page-down)
+          ("s-v" . pager-page-up)
+          ("<prior>" . pager-page-up)
+          ("C-q" . pager-row-up)
+          ("C-z" . pager-row-down)))
 ;; (require 'pager)
 ;; (global-set-key [(control v)] 'pager-page-down)
 ;; (global-set-key [next]  'pager-page-down)

@@ -65,6 +65,7 @@
   (package-refresh-contents)
   (package-install 'use-package))
 (require 'use-package)
+(require 'bind-key)
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
@@ -1192,16 +1193,20 @@ won't parse the buffer."
 		;; Option = Meta, Command = Super
 		;; This allows speech-to-text tools (Cmd+V) to work without conflicts
 		(setq mac-command-modifier 'meta)
-		(setq mac-options-modifier 'super)
-
+		(setq ns-command-modifier 'meta)
+		(setq mac-option-modifier 'super)
+		(setq ns-option-modifier 'super)
+		(setq mac-right-option-modifier 'super)
+		(setq ns-right-option-modifier 'super)
+		
 		;; Bind Cmd+V to paste for speech-to-text tools
-		(global-set-key (kbd "M-v") 'yank)
+		(bind-key* "M-v" 'yank)
 
 		;; use spotlight instead of locate command to find stuff
 		(setq locate-command "mdfind")
 
 		;; this puts windows in the background on the mac
-		(global-set-key (kbd "M-h") 'ns-do-hide-emacs)
+		(bind-key* "M-h" 'ns-do-hide-emacs)
 
 		;; switch between emacs windows with Cmd+`
 		(global-set-key (kbd "s-`") 'other-frame)
@@ -1216,14 +1221,14 @@ won't parse the buffer."
 	 (cond (my-unixp
 		;; Don't run the emacs server if we are running minimal emacs config
 		
-                ;; Emacs server starts a listener on emacs that emacsclient can send files to for opening.
-                ;; This lets you have just one emacs running and everything else sends stuff to it.
-                ;; 
-                ;; Calls emacsclient to check if another instance of emacs
-                ;; is already running a server. The lambda is the process-filter
-                ;; which gets the output and calls start-server if no other emacs server
-                ;; was found by the emacsclient process.
-                (let ((process-connection-type nil))
+		;; Emacs server starts a listener on emacs that emacsclient can send files to for opening.
+		;; This lets you have just one emacs running and everything else sends stuff to it.
+		;; 
+		;; Calls emacsclient to check if another instance of emacs
+		;; is already running a server. The lambda is the process-filter
+		;; which gets the output and calls start-server if no other emacs server
+		;; was found by the emacsclient process.
+		(let ((process-connection-type nil))
 		  (set-process-filter
 		   (start-process "my-process" nil "emacsclient" "--eval" "t")
 		   (lambda (process output)
