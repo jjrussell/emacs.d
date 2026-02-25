@@ -365,32 +365,6 @@ Dependent gems:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; EJS templates multi-mode
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;(require 'mmm-auto)
-
-(defun my-mmm-auto-mode-hook ()
-  (interactive)
-  (mmm-add-mode-ext-class 'html-erb-mode "\\.html\\.erb\\'" 'erb)
-  (mmm-add-mode-ext-class 'html-erb-mode "\\.jst\\.ejs\\'" 'ejs)
-  ;; (mmm-add-mode-ext-class 'html-erb-mode nil 'html-js)
-  ;; (mmm-add-mode-ext-class 'html-erb-mode nil 'html-css)
-
-  ;;nXML as primary mode (supports only JS and CSS subregions):
-  (mmm-add-mode-ext-class 'nxml-web-mode nil 'html-js)
-  (mmm-add-mode-ext-class 'nxml-web-mode nil 'html-css)
-  )
-
-(setq mmm-global-mode 'auto)
-(add-hook 'mmm-major-mode-hook 'my-mmm-auto-mode-hook)
-(add-to-list 'auto-mode-alist '("\\.xhtml\\'" . nxml-web-mode))
-
-(add-to-list 'auto-mode-alist '("\\.html\\.erb\\'" . html-erb-mode))
-(add-to-list 'auto-mode-alist '("\\.jst\\.ejs\\'"  . html-erb-mode))
-
-(setq mmm-submode-decoration-level 1
-      mmm-parse-when-idle t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -453,8 +427,9 @@ Dependent gems:
 (add-to-list 'auto-mode-alist '("\\.wsdd" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.rng" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.xhtml" . nxml-mode))
-(add-to-list 'auto-mode-alist '("\\.html" . nxml-mode))
-(add-to-list 'auto-mode-alist '("\\.htm" . nxml-mode))
+(use-package web-mode
+  :ensure t
+  :mode ("\\.html\\'" "\\.htm\\'"))
 (add-to-list 'auto-mode-alist '("\\.ism" . nxml-mode)) ; install shield
 (add-to-list 'auto-mode-alist '("\\.cfg" . nxml-mode)) ; OCCI install config
                                         ;(add-to-list 'auto-mode-alist '("\\.rhtml" . nxml-mode)) ; OCCI install config

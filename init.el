@@ -34,7 +34,8 @@
 (defconst my-site-lisp-dir (expand-file-name "site-lisp" user-emacs-directory))
 
 (defconst my-emacs-local-store (expand-file-name ".emacs.local" "~") "Place where local stuff is kept e.g. desktop definitions.")
-(defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory) "Junk place for auto-save files.")
+(defconst emacs-tmp-dir (expand-file-name "tmp" my-emacs-local-store) "Junk place for auto-save files.")
+(make-directory emacs-tmp-dir t)
 
 ;; Tell customize to use a separate file
 (setq custom-file (expand-file-name "init/custom.el" user-emacs-directory))
@@ -133,10 +134,12 @@
  create-lockfiles nil
  history-length 500
  make-backup-files nil  ; don't create backup~ files
+ vc-follow-symlinks t
  ;; death to all temp files https://www.emacswiki.org/emacs/AutoSave
  backup-directory-alist `((".*" . ,emacs-tmp-dir))
  auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
  auto-save-list-file-prefix emacs-tmp-dir
+ undo-tree-history-directory-alist `((".*" . ,emacs-tmp-dir))
  ;; old variable. Still needed 2019-01-04 
  ;; auto-save-directory (concat my-emacs-local-store "/auto-save-list")
  ;; auto-save-list-file-prefix ".saves-"
@@ -229,6 +232,8 @@
 (add-to-list 'auto-mode-alist '("httpd.conf" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.ds" . lisp-mode)) ; devilspie config
 (add-to-list 'auto-mode-alist '("\\.md" . markdown-mode))
+(with-eval-after-load 'markdown-mode
+  (define-key markdown-mode-map (kbd "M-p") nil))
 (add-to-list 'auto-mode-alist '("\\.log" . text-mode)) ;; 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
