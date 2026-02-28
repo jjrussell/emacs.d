@@ -171,8 +171,8 @@
 	      dracula-theme duplicate-thing ecb edit-server egg embrace emmet-mode enh-ruby-mode epc
 	      exec-path-from-shell fireplace flx-ido flycheck-pyflakes fold-dwim fold-this
 	      format-sql fuzzy ggtags gist git-timemachine github-browse-file gmail-message-mode
-	      go-autocomplete go-direx go-projectile go-scratch go-stacktracer groovy-mode haml-mode
-	      helm helm-lsp hungry-delete hydra ibuffer-vc ido-vertical-mode idomenu iedit
+	      go-autocomplete go-direx go-projectile go-scratch go-stacktracer grip-mode groovy-mode
+	      haml-mode helm helm-lsp hungry-delete hydra ibuffer-vc ido-vertical-mode idomenu iedit
 	      imenu-anywhere ioccur jira js2-highlight-vars js2-refactor json-mode key-chord
 	      log4j-mode lsp-intellij lsp-java lsp-mode lsp-ui lua-mode magit markdown-mode
 	      multiple-cursors neotree nerd-icons-completion nerd-icons-dired nerd-icons-grep

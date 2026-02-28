@@ -359,7 +359,7 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   (projectile-switch-project-action 'projectile-commander)
   (projectile-tags-backend 'find-tag)
   ;; You have a very extensive list of root files, this keeps it neat
-  (projectile-project-root-files-bottom-up '(".prj" ".git" ".hg" ".fslckout" "_FOSSIL_" ".bzr" "_darcs"))
+  (projectile-project-root-files-bottom-up '(".prj" ".claude" ".git" ".hg" ".fslckout" "_FOSSIL_" ".bzr" "_darcs"))
   (projectile-project-root-files
    '("rebar.config" "project.clj" "pom.xml" "build.sbt" "build.gradle" "Gemfile" "requirements.txt"
      "package.json" "gulpfile.js" "Gruntfile.js" "bower.json" "composer.json" "Cargo.toml" "mix.exs"
