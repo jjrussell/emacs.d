@@ -414,6 +414,22 @@ at point."
 
 
 
+;; live viewing of markdown preview. Requires brew install grip
+(use-package grip-mode
+  :ensure t
+  :config
+  ;; Ensure grip-mode uses xwidgets
+  (setq grip-use-xwidgets t)
+  
+  ;; Force the xwidget/grip buffer to open in a side-by-side split on the right
+  (add-to-list 'display-buffer-alist
+               '("^\\*xwidget-webkit:\\|^\\*grip" 
+                 (display-buffer-in-direction)
+                 (direction . right)
+                 (window-width . 0.5))))
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Vundo
@@ -646,8 +662,6 @@ at point."
 ;;                                   (dired-single-magic-buffer
 ;;                                    default-directory))))
 ;; (global-set-key [(shift f5)] 'dired-single-toggle-buffer-name)
-
-
 (provide 'my-tools)
 (message "Done loading my-tools.el")
 
