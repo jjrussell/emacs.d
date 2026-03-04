@@ -29,18 +29,39 @@
 ;; lsp-mode - condfig lifted from https://raw.githubusercontent.com/neppramod/java_emacs/master/emacs-configuration.org
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; default auto-completion for lsp-mode
-(use-package company
+;; treesit-auto: manages tree-sitter grammar installation and mode remapping
+;; Automatically remaps e.g. ruby-mode -> ruby-ts-mode, python-mode -> python-ts-mode etc.
+(use-package treesit-auto
   :ensure t
-  :hook (prog-mode . company-mode) ; Only activate for programming modes
   :custom
-  (company-idle-delay 0.5)
-  ;; I've removed the eclim and xcode backends that were causing errors
-  (company-backends
-   '(company-bbdb company-nxml company-css company-semantic company-clang
-                  company-cmake company-capf
-                  (company-dabbrev-code company-gtags company-etags company-keywords)
-                  company-oddmuse company-files company-dabbrev)))
+  (treesit-auto-install 'prompt)
+  :config
+  (global-treesit-auto-mode))
+
+;; corfu: lightweight completion-at-point UI (replaces company)
+;; Works with lsp-mode's :capf provider already configured below
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.3)
+  (corfu-auto-prefix 2)
+  (corfu-quit-no-match 'separator)
+  :bind (:map corfu-map
+              ("TAB" . corfu-next)
+              ([tab] . corfu-next)
+              ("S-TAB" . corfu-previous)
+              ([backtab] . corfu-previous))
+  :init
+  (global-corfu-mode))
+
+;; cape: additional completion-at-point sources for corfu
+(use-package cape
+  :ensure t
+  :init
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-file)
+  (add-hook 'completion-at-point-functions #'cape-keyword))
 
 (use-package yasnippet :config (yas-global-mode))
 (use-package yasnippet-snippets :ensure t)
@@ -62,16 +83,17 @@
 	      lsp-ui-doc-position 'bottom
               lsp-ui-doc-max-width 100
 	      ))
-(use-package helm-lsp
+(use-package consult-lsp
   :ensure t
-  :after (lsp-mode)
-  :commands (helm-lsp-workspace-symbol)
-  :init (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
+  :after (lsp-mode consult)
+  :bind (:map lsp-mode-map
+              ([remap xref-find-apropos] . consult-lsp-symbols)))
 (use-package lsp-mode
   :ensure t
   :hook (
 	 (lsp-mode . lsp-enable-which-key-integration)
 	 (java-mode . #'lsp-deferred)
+	 (java-ts-mode . #'lsp-deferred)
 	 )
   :init (setq
 	 lsp-keymap-prefix "C-c l"              ; this is for which-key integration documentation, need to use lsp-mode-map
@@ -86,9 +108,11 @@
     (setf (lsp--client-multi-root (gethash 'iph lsp-clients)) nil))
   ;;(define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
   )
-(use-package lsp-java 
+(use-package lsp-java
   :ensure t
-  :config (add-hook 'java-mode-hook 'lsp))
+  :config
+  (add-hook 'java-mode-hook 'lsp)
+  (add-hook 'java-ts-mode-hook 'lsp))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Go
@@ -133,7 +157,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package rspec-mode
   :ensure t
-  :hook (ruby-mode . rspec-mode)
+  :hook ((ruby-mode . rspec-mode) (ruby-ts-mode . rspec-mode))
   :custom
   (rspec-command-options "--format documentation --drb")
   (rspec-use-bundler-when-possible nil)
@@ -207,6 +231,7 @@
 
 (add-hook 'projectile-mode-hook 'projectile-rails-on)
 (add-hook 'ruby-mode-hook 'my-ruby-mode-hook)
+(add-hook 'ruby-ts-mode-hook 'my-ruby-mode-hook)
 
 (defun update-ruby-tags ()
   "Find the project root using projectile and if it looks like a ruby project then update the tags
@@ -241,15 +266,17 @@ Dependent gems:
 (add-hook 'ruby-mode-hook
           (lambda ()
             (add-hook 'after-save-hook 'update-ruby-tags nil t)))
+(add-hook 'ruby-ts-mode-hook
+          (lambda ()
+            (add-hook 'after-save-hook 'update-ruby-tags nil t)))
 
 
-(add-to-list 'auto-mode-alist '("\\.rb" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\.rake" . ruby-mode))
-(add-to-list 'auto-mode-alist '("Rakefile" . ruby-mode))
-(add-to-list 'auto-mode-alist '("Gemfile" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\.gemspec" . ruby-mode))
-(add-to-list 'interpreter-mode-alist  '("ruby" . ruby-mode))
-(use-package ruby-mode)
+(add-to-list 'auto-mode-alist '("\\.rb" . ruby-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.rake" . ruby-ts-mode))
+(add-to-list 'auto-mode-alist '("Rakefile" . ruby-ts-mode))
+(add-to-list 'auto-mode-alist '("Gemfile" . ruby-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.gemspec" . ruby-ts-mode))
+(add-to-list 'interpreter-mode-alist '("ruby" . ruby-ts-mode))
 (use-package inf-ruby
   :commands (inf-ruby run-ruby inf-ruby-setup-keybindings))
 
@@ -257,37 +284,6 @@ Dependent gems:
   :commands (align-regexp align-entire align-current align-newline-and-indent))
 
 
-;; Modified slightly from
-;; http://stackoverflow.com/questions/4412739/emacs-ruby-mode-indentation-behavior
-;; This makes functions args not wrapped in parens to indent subsequent args on
-;; newlines two spaces from the original method call.
-;; 2013-05-14 New versino of ruby-mode came out. trying without this.
-(defadvice ruby-indent-line (after line-up-args activate)
-  (let (indent prev-indent arg-indent)
-    (save-excursion
-      (back-to-indentation)
-      (when (zerop (car (syntax-ppss)))
-
-        (setq indent (current-column))
-        (skip-chars-backward " \t\n")
-        (when (eq ?, (char-before))
-          (ruby-backward-sexp)
-          (back-to-indentation)
-          (setq prev-indent (current-column))
-          (skip-syntax-forward "w_.")
-          (skip-chars-forward " ")
-          (setq arg-indent (current-column)))))
-    (when prev-indent
-      (let ((offset (- (current-column) indent)))
-        (cond ((< indent prev-indent)
-               (indent-line-to prev-indent))
-              ((= indent prev-indent)
-               ;; this line will indent the next line arg under the arg
-               ;; on the first line.  The change I made indents the next line
-               ;; arg to two more than the method call
-               ;; (indent-line-to arg-indent)))
-               (indent-line-to (+ 2 prev-indent))))
-        (when (> offset 0) (forward-char offset))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -324,44 +320,22 @@ Dependent gems:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Javascript Mode
-;; Relevant packages
-;; js2-mode - fancier JS editor
-;; rjsx-mode - built on js2-mode with JSX support. Use this instead
-;; js2-refactor - refactoring
-;; xref-js2 - tagging and searching
-;; https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
+;; JavaScript / TypeScript via tree-sitter (Emacs 29+)
+;; js-ts-mode, tsx-ts-mode, typescript-ts-mode replace js2-mode/rjsx-mode
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
-(add-to-list 'auto-mode-alist '("\\.json$" . json-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
 
-(add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
-(add-hook 'js2-mode-hook #'js2-refactor-mode)
-
-;; js-mode which js2 is based on binds "M-." which conflicts with xref, so
-;; unbind it.
-(eval-after-load 'rjsx-mode
-  '(progn
-     (js2r-add-keybindings-with-prefix "C-c C-r")
-     (define-key js2-mode-map [(control k)] #'js2r-kill)
-
-     (add-hook 'js2-mode-hook (lambda ()
-                                (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
-     (add-hook 'rjsx-mode-hook (lambda ()
-                                 (add-node-modules-path)
-                                 (setenv "PATH" (mapconcat 'identity exec-path ":"))))
-     (add-hook 'rjsx-mode-hook (lambda ()
-                                 (js2-highlight-vars-mode)
-                                 ;; don't let highlight mode clobber my useful keybindings with their silly nonesense
-                                 (setq js2-highlight-vars-local-keymap (make-sparse-keymap))))
-
-     
-     (define-key js-mode-map [(meta .)] 'js2-jump-to-definition) ; better than xref-find-definitions in JS
-     (define-key js-mode-map (kbd "≥") 'js2-jump-to-definition) ; alt-. on mac. Duplicate to be consistent with intellij
-     (define-key js-mode-map [(control meta .)] 'xref-find-definitions) ; backup to js2-jump-to-definition
-     )) 
+(dolist (hook '(js-ts-mode-hook tsx-ts-mode-hook typescript-ts-mode-hook))
+  (add-hook hook #'add-node-modules-path)
+  (add-hook hook (lambda ()
+                   (setenv "PATH" (mapconcat 'identity exec-path ":"))))
+  (add-hook hook #'lsp-deferred))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

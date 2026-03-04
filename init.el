@@ -135,12 +135,12 @@
  history-length 500
  make-backup-files nil  ; don't create backup~ files
  vc-follow-symlinks t
+ native-comp-async-report-warnings-errors 'silent
  ;; death to all temp files https://www.emacswiki.org/emacs/AutoSave
  backup-directory-alist `((".*" . ,emacs-tmp-dir))
  auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
  auto-save-list-file-prefix emacs-tmp-dir
- undo-tree-history-directory-alist `((".*" . ,emacs-tmp-dir))
- ;; old variable. Still needed 2019-01-04 
+ ;; old variable. Still needed 2019-01-04
  ;; auto-save-directory (concat my-emacs-local-store "/auto-save-list")
  ;; auto-save-list-file-prefix ".saves-"
 
@@ -187,9 +187,7 @@
 		  (kill-this-buffer nil)))
 (global-set-key (kbd "C-c q") 'auto-fill-mode) ; toggle auto-fill-mode
 (global-set-key (kbd "M-`") 'other-frame) ; mac-like frame switching behavior
-(global-set-key (kbd "M-1") 'other-window) ; alt-tab for buffer windows. 
-(global-set-key (kbd "M-0")   #'(lambda () (interactive)
-				  (select-window (active-minibuffer-window))))
+;; M-0 through M-9 are handled by winum (jump to window by number, M-0 = minibuffer)
 ;; vscode/sublime keybinding and behavior for join lines
 (global-set-key (kbd "C-j") (lambda () (interactive) (join-line t)))
 (global-set-key [3 9] (lambda () (interactive) (insert-tab))) ; Control-C TAB as a vector
@@ -323,14 +321,14 @@
 (global-set-key [(meta shift down)]  'move-line-down)
 
 (defun visit-term-buffer ()
-  "Create or visit a terminal buffer."
+  "Create or visit a vterm buffer."
   (interactive)
-  (if (not (get-buffer "*ansi-term*"))
-      (progn
-        (split-window-sensibly (selected-window))
-        (other-window 1)
-        (ansi-term (getenv "SHELL")))
-    (switch-to-buffer-other-window "*ansi-term*")))
+  (if (get-buffer "*vterm*")
+      (switch-to-buffer-other-window "*vterm*")
+    (progn
+      (split-window-sensibly (selected-window))
+      (other-window 1)
+      (vterm))))
 
 (global-set-key (kbd "C-c t") 'visit-term-buffer)
 

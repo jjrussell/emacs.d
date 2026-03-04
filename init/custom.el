@@ -111,12 +111,10 @@
  '(glasses-original-separator "")
  '(glasses-separate-parentheses-p nil)
  '(glasses-separator "")
- '(global-auto-complete-mode nil)
  '(global-auto-revert-mode t)
  '(global-hungry-delete-mode nil)
  '(global-smart-tab-mode t)
  '(global-subword-mode t)
- '(global-undo-tree-mode t)
  '(global-visual-line-mode t)
  '(grep-command "grep -2EInir ")
  '(grep-highlight-matches 'auto-detect)
@@ -128,8 +126,6 @@
                            try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
                            try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
- '(icicle-mode t)
- '(icicle-show-Completions-initially-flag t)
  '(indent-tabs-mode nil)
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
@@ -234,8 +230,7 @@
  '(whitespace-style
    '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
           tab-mark))
- '(window-numbering-auto-assign-0-to-minibuffer t)
- '(window-numbering-mode nil))
+)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

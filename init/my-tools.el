@@ -57,7 +57,7 @@
   ("o" my-occur-all-buffers "occur all buffers")
   
   ("!" shell-command "shell-command" :column "Utilities")
-  ("a" projectile-ag "ag")
+  ("a" consult-ripgrep "ripgrep")
   ("y" paste-stack-in-project "paste-stack-in-project")
   ("M-t" toggle-window-dedicated "toggle-window-dedicated")
   ("n" my-truncate-toggle "toggle truncate lines")
@@ -106,15 +106,13 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   _d_: dir
 
 "
-  ("a"   projectile-ag)
+  ("a"   consult-ripgrep)
   ("b"   projectile-switch-to-buffer)
   ("c"   projectile-invalidate-cache)
   ("d"   projectile-find-dir)
   ("s-f" projectile-find-file)
   ("ff"  projectile-find-file-dwim)
   ("fd"  projectile-find-file-in-directory)
-  ("g"   ggtags-update-tags)
-  ("s-g" ggtags-update-tags)
   ("i"   projectile-ibuffer)
   ("K"   projectile-kill-buffers)
   ("s-k" projectile-kill-buffers)
@@ -171,6 +169,24 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   :ensure t
   :bind
   ("<f8>" . treemacs-select-window))
+
+;; winum: M-1 through M-9 to jump to numbered windows (replaces window-numbering)
+(use-package winum
+  :ensure t
+  :custom
+  (winum-auto-assign-0-to-minibuffer t)
+  :config
+  (winum-mode))
+
+;; nerd-icons-dired: file type icons in dired
+(use-package nerd-icons-dired
+  :ensure t
+  :hook (dired-mode . nerd-icons-dired-mode))
+
+;; nerd-icons-ibuffer: file type icons in ibuffer
+(use-package nerd-icons-ibuffer
+  :ensure t
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 
 ;; https://github.com/hlissner/emacs-doom-themes
@@ -243,86 +259,54 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;; in case auto-complete is using tab key
 (global-set-key (kbd "M-/") 'hippie-expand)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; autocomplete popups everywhere. Sometimes its even smart
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; auto-complete
-;; (require 'auto-complete-config)
-;; (ac-config-default)
-;; ;; Don't put hippie expand here because it is at the front of smart-tab list
-;; (set-default 'ac-sources
-;;              '(
-;;                ac-source-yasnippet
-;;                ac-source-imenu
-;;                ;;ac-source-dictionary
-;;                ac-source-words-in-buffer
-;;                ac-source-words-in-same-mode-buffers
-;;                ac-source-filename
-;;                ac-source-abbrev
-;;                ;;ac-source-semantic
-;;                ))
-
-;; (custom-set-variables
-;;  '(ac-etags-requires 1))
-
-;; (eval-after-load "etags"
-;;   '(progn
-;;      (ac-etags-setup)))
-;; ;; added to ruby mode hook in my-development.el
-
-;; (global-auto-complete-mode t)
-;; (set-default 'ac-fuzzy-enable t)
-;; (setq ac-fuzzy-enable t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Company mode - alternative to auto-complete
-;; Trying it out 2016-04-01
+;; Completing-read: vertico + consult + orderless + marginalia
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; no config needed yet. global-company-mode in customize 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; ido - makes switching between anything in emacs amazing with type-ahead search, fuzzy matching etc.
-;; Can be made to work with selecting anything, commands, files, whatever
-;; Imporoved buffer selection with C-x b if available
-;; 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 
-;; enable ido style completion in M-x menu
-(use-package smex
-  :bind ("M-x" . smex))
-
-(use-package ido
-  :ensure nil ; ido is built-in
-  :config
-  (ido-mode 1)  ; actually I kind of like it with file
-  (ido-everywhere 1)
-  (ido-vertical-mode 1)
-  (flx-ido-mode 1) ; fuzzy matching for ido https://github.com/lewang/flx
+;; vertico: vertical completing-read UI (replaces ido+smex+ido-vertical)
+(use-package vertico
+  :ensure t
+  :init (vertico-mode)
   :custom
-  (ido-create-new-buffer 'prompt)
-  (ido-enable-flex-matching t) ;; disable ido faces to see flx highlights.
-  (ido-use-faces t)
-  (ido-max-window-height 30)) 
+  (vertico-count 20)
+  (vertico-cycle t))
 
+;; orderless: fuzzy/flexible matching (replaces flx-ido)
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
-;; use ido absolutely everywhere where completing-read would be
-;; 2022-04-23 stopped working https://github.com/mrkkrp/ido-ubiquitous
-;; doesn't appear to be in melpa. Forked from DarwinAwardWinner/ido-completing-read-plus
-;; which I have installed so this is likely abandoned. 
-;; (ido-ubiquitous-mode 1) 
+;; marginalia: annotations in completing-read (shows docstrings, file info, etc.)
+(use-package marginalia
+  :ensure t
+  :init (marginalia-mode))
 
+;; nerd-icons-completion: icons in vertico/marginalia completions
+(use-package nerd-icons-completion
+  :ensure t
+  :after marginalia
+  :config (nerd-icons-completion-mode))
+
+;; consult: enhanced completing-read commands (replaces ioccur, browse-kill-ring, helm-mini)
+(use-package consult
+  :ensure t
+  :bind (("C-x b"   . consult-buffer)
+         ("C-x B"   . consult-buffer-other-window)
+         ("<C-tab>" . consult-buffer)
+         ("M-y"     . consult-yank-pop)
+         ("M-s i"   . consult-line)
+         ("M-s r"   . consult-ripgrep)
+         ("C-c h"   . consult-buffer))
+  :custom
+  (consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=1000 --path-separator / --smart-case --no-heading --with-filename --line-number --search-zip"))
 
 (define-key global-map [(control x)(control b)] 'ibuffer)
-(global-set-key [(control x) (b)] 'ido-switch-buffer)
-(global-set-key (kbd "<C-tab>") 'ido-switch-buffer)
-(with-eval-after-load 'ido
-  (define-key ido-common-completion-map [(control n)] 'ido-next-match)
-  (define-key ido-common-completion-map [(control p)] 'ido-prev-match))
 
 ;; Fix ido-ubiquitous for newer packages
 ;; http://whattheemacsd.com/setup-ido.el-01.html
@@ -486,15 +470,6 @@ at point."
 ;; expand region on each successive use of this.
 (global-set-key (kbd "C-.") 'er/expand-region)
 
-(defun my-yank-pop ()
-  "If previous command was not a yank, search kill ring"
-  (interactive)
-  (if (eq last-command 'yank)
-      (yank-pop)
-    ;; incremental search through the kill ring. Awesome.
-    (browse-kill-ring)))
-
-(global-set-key "\M-y" 'my-yank-pop)
 
 ;; better duplicate buffer name handling
 (use-package uniquify
@@ -567,8 +542,6 @@ at point."
   (key-chord-define-global "hh" 'switch-to-previous-buffer))
 ;; What other ones would be useful?
 
-;; incremental occur awesomeness
-(global-set-key (kbd "M-s i") 'ioccur)
 
 ;; visible bookmarks
 (use-package bm
@@ -588,15 +561,18 @@ at point."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Acejump mode - marking words for direct jumping
+;; Avy - jump to any visible text by character (replaces ace-jump-mode)
+;; avy-goto-char-timer: type chars then pick label; avy-goto-line for lines
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(use-package ace-jump-mode
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package avy
   :ensure t
-  :bind (("C-c SPC" . ace-jump-mode)
-         ("C-x SPC" . ace-jump-mode-pop-mark))
-  :config
-  (ace-jump-mode-enable-mark-sync))
+  :bind (("C-c SPC" . avy-goto-char-timer)
+         ("C-c C-SPC" . avy-goto-line)
+         ("C-x SPC" . avy-pop-mark))
+  :custom
+  (avy-timeout-seconds 0.4)
+  (avy-style 'de-bruijn))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -607,16 +583,6 @@ at point."
 (global-set-key (kbd "M-o") 'ace-window)
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; HELM - https://github.com/emacs-helm/helm
-;; Don't use this much
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (helm-mode 1)
-;; (require 'helm-config)
-;; (require 'helm-themes)
-(global-set-key (kbd "C-c h") 'helm-mini)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
