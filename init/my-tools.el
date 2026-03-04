@@ -297,11 +297,6 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   :ensure t
   :init (marginalia-mode))
 
-;; nerd-icons-completion: icons in vertico/marginalia completions
-(use-package nerd-icons-completion
-  :ensure t
-  :after marginalia
-  :config (nerd-icons-completion-mode))
 
 ;; consult: enhanced completing-read commands (replaces ioccur, browse-kill-ring, helm-mini)
 (use-package consult
@@ -431,7 +426,12 @@ at point."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package vundo
   :ensure t
-  :bind (("C-_" . vundo)))
+  :custom
+  (vundo-popup-timeout 2.0)
+  :config
+  (require 'vundo-popup)
+  (vundo-popup-mode 1)
+  :bind (("C-c u" . vundo)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
