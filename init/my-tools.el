@@ -100,7 +100,7 @@
      Find File            Search/Tags          Buffers                Cache
 ------------------------------------------------------------------------------------------
 _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache clear
- _ff_: file dwim       _g_: update gtags      _b_: switch to buffer  _x_: remove known project
+ _ff_: file dwim                              _b_: switch to buffer  _x_: remove known project
  _fd_: file curr dir   _o_: multi-occur     _s-k_: Kill all buffers  _X_: cleanup non-existing
   _r_: recent file                                               ^^^^_z_: cache current
   _d_: dir
