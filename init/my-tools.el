@@ -290,7 +290,8 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   :ensure t
   :custom
   (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles basic partial-completion)))))
+  (completion-category-overrides '((file (styles basic partial-completion))))
+  (orderless-matching-styles '(orderless-literal orderless-regexp orderless-flex)))
 
 ;; marginalia: annotations in completing-read (shows docstrings, file info, etc.)
 (use-package marginalia
