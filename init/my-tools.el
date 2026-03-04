@@ -645,5 +645,5 @@ at point."
 (message "Done loading my-tools.el")
 
 ;; Local Variables:
-;; byte-compile-warnings: (not free-vars obsolete)
+;; no-byte-compile: t
 ;; End:
