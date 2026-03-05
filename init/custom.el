@@ -177,7 +177,7 @@
 	      pos-tip prettier-js projectile-rails protobuf-mode python-mode rainbow-delimiters
 	      rbenv real-auto-save rspec-mode ruby-end ruby-interpolation ruby-tools rvm scss-mode
 	      smart-tab smartparens smex sql-indent tern toggle-quotes treemacs treemacs-projectile
-	      treesit-auto undo-tree uniquify use-package vertica vertico vterm web-mode wgrep
+	      treesit-auto undo-tree uniquify use-package vertica vertico vterm vundo web-mode wgrep
 	      window-numbering winum writeroom-mode xml-rpc xref-js2 yafolding yaml-mode
 	      yasnippet-snippets))
  '(ps-line-number t)
@@ -231,8 +231,7 @@
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
    '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
-	  tab-mark))
-)
+	  tab-mark)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
