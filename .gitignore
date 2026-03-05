@@ -31,3 +31,5 @@ etc
 tramp
 server/
 eln-cache/
+tree-sitter/
+projects/
