@@ -16,6 +16,17 @@
 (use-package magit
   :commands magit-status)
 
+(use-package forge
+  :ensure t
+  :after magit)
+
+(use-package diff-hl
+  :ensure t
+  :config
+  (global-diff-hl-mode)
+  (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
+  (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
+
 (defun shell-git-status(dir)
   (interactive)
   "Function called from emacsclient to show git status from pwd"
@@ -31,12 +42,71 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;; treesit-auto: manages tree-sitter grammar installation and mode remapping
 ;; Automatically remaps e.g. ruby-mode -> ruby-ts-mode, python-mode -> python-ts-mode etc.
-(use-package treesit-auto
-  :ensure t
-  :custom
-  (treesit-auto-install 'prompt)
-  :config
-  (global-treesit-auto-mode))
+;; treesit-auto is disabled due to a performance bug: it calls treesit-language-available-p
+;; for every language on every file open, causing a 2-3 second freeze.
+;; https://github.com/renzmann/treesit-auto/issues/84
+;; If that issue is resolved, re-enable this and remove the manual remap below:
+;;
+;; (use-package treesit-auto
+;;   :ensure t
+;;   :custom
+;;   (treesit-auto-install 'prompt)
+;;   :config
+;;   (global-treesit-auto-mode))
+
+;; Grammar sources for treesit-install-language-grammar.
+;; treesit-auto populated this automatically; we do it manually here.
+;; Add entries here alongside any new candidates below.
+(setq treesit-language-source-alist
+      '((bash       . ("https://github.com/tree-sitter/tree-sitter-bash"))
+        (c          . ("https://github.com/tree-sitter/tree-sitter-c"))
+        (cpp        . ("https://github.com/tree-sitter/tree-sitter-cpp"))
+        (cmake      . ("https://github.com/tree-sitter/tree-sitter-cmake"))
+        (css        . ("https://github.com/tree-sitter/tree-sitter-css"))
+        (dockerfile . ("https://github.com/camdencheek/tree-sitter-dockerfile"))
+        (go         . ("https://github.com/tree-sitter/tree-sitter-go"))
+        (java       . ("https://github.com/tree-sitter/tree-sitter-java"))
+        (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+        (json       . ("https://github.com/tree-sitter/tree-sitter-json"))
+        (lua        . ("https://github.com/MunifTanjim/tree-sitter-lua"))
+        (python     . ("https://github.com/tree-sitter/tree-sitter-python"))
+        (ruby       . ("https://github.com/tree-sitter/tree-sitter-ruby"))
+        (rust       . ("https://github.com/tree-sitter/tree-sitter-rust"))
+        (toml       . ("https://github.com/tree-sitter-grammars/tree-sitter-toml"))
+        (tsx        . ("https://github.com/tree-sitter/tree-sitter-typescript" nil "tsx/src"))
+        (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" nil "typescript/src"))
+        (yaml       . ("https://github.com/ikatyang/tree-sitter-yaml"))))
+
+;; Manual remap: same effect as treesit-auto but computed once at startup.
+;; Each entry: (old-mode grammar-symbol . ts-mode)
+;; Add new languages here (and a source above); they activate once the grammar is installed.
+(let ((candidates
+       '((bash-mode        bash       . bash-ts-mode)
+         (sh-mode          bash       . bash-ts-mode)
+         (c-mode           c          . c-ts-mode)
+         (c++-mode         cpp        . c++-ts-mode)
+         (cmake-mode       cmake      . cmake-ts-mode)
+         (css-mode         css        . css-ts-mode)
+         (dockerfile-mode  dockerfile . dockerfile-ts-mode)
+         (go-mode          go         . go-ts-mode)
+         (java-mode        java       . java-ts-mode)
+         (js-mode          javascript . js-ts-mode)
+         (javascript-mode  javascript . js-ts-mode)
+         (js-json-mode     json       . json-ts-mode)
+         (json-mode        json       . json-ts-mode)
+         (lua-mode         lua        . lua-ts-mode)
+         (python-mode      python     . python-ts-mode)
+         (ruby-mode        ruby       . ruby-ts-mode)
+         (rust-mode        rust       . rust-ts-mode)
+         (toml-mode        toml       . toml-ts-mode)
+         (typescript-mode  typescript . typescript-ts-mode)
+         (yaml-mode        yaml       . yaml-ts-mode))))
+  (setq major-mode-remap-alist
+        (delq nil
+              (mapcar (lambda (entry)
+                        (when (treesit-language-available-p (cadr entry) t)
+                          (cons (car entry) (cddr entry))))
+                      candidates))))
 
 ;; corfu: lightweight completion-at-point UI (replaces company)
 ;; Works with lsp-mode's :capf provider already configured below
@@ -53,7 +123,8 @@
               ("S-TAB" . corfu-previous)
               ([backtab] . corfu-previous))
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  (add-hook 'minibuffer-setup-hook (lambda () (corfu-mode -1))))
 
 ;; cape: additional completion-at-point sources for corfu
 (use-package cape
