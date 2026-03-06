@@ -17,8 +17,6 @@
      "--column" "--"))
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
- '(ansi-color-names-vector
-   (vector "#839496" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#002b36"))
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
    '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode
@@ -99,7 +97,6 @@
  '(exec-path-from-shell-check-startup-files nil)
  '(exec-path-from-shell-variables
    '("PATH" "MANPATH" "LANG" "LC_CTYPE" "MY_ENG" "MY_ENV" "MY_EMAIL_PERSONAL" "MY_NAME" "GOPATH"))
- '(fci-rule-color "#073642")
  '(file-coding-system-alist
    '(("\\.elc\\'" emacs-mule . emacs-mule) ("\\(\\`\\|/\\)loaddefs.el\\'" raw-text . raw-text-unix)
      ("\\.reg\\'" utf-16-le . utf-16-le) ("\\.tar\\'" no-conversion . no-conversion) ("" undecided)))
@@ -127,14 +124,14 @@
 			   try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(indent-tabs-mode nil)
- '(initial-major-mode 'org-mode)
+ '(initial-major-mode 'text-mode)
  '(initial-scratch-message nil)
  '(js-indent-level 2)
  '(js2-basic-offset 2)
  '(large-file-warning-threshold 100000000)
  '(mail-default-directory "~/.emacs.local/")
  '(mail-source-directory "~/.emacs.local/Mail/")
- '(major-mode 'org-mode)
+ '(major-mode 'text-mode)
  '(make-backup-files t)
  '(menu-bar-mode nil)
  '(message-auto-save-directory "~/.emacs.local/Mail/drafts/")
@@ -154,32 +151,32 @@
  '(nxml-child-indent 4)
  '(nxml-outline-child-indent 4)
  '(nxml-slash-auto-complete-flag t)
- '(objed-cursor-color "#dc322f")
- '(org-default-notes-file "~/.jjr-drive/RIGHT_NOW.txt")
- '(org-reverse-note-order t)
- '(org-startup-indented t)
  '(package-selected-packages
-   '(ac-etags ace-jump-mode ack add-node-modules-path ag aggressive-indent ai-code alchemist
-	      all-the-icons all-the-icons-completion all-the-icons-dired all-the-icons-ibuffer
-	      auto-indent-mode bm browse-kill-ring buffer-move bundler cape centered-window
-	      coffee-mode color-identifiers-mode color-theme-sanityinc-tomorrow company-go
-	      company-shell consult consult-lsp corfu crontab-mode csv-mode ctags-update
-	      dash-functional doom-modeline doom-themes dracula-theme duplicate-thing ecb
-	      edit-server egg embrace emmet-mode enh-ruby-mode epc exec-path-from-shell fireplace
-	      flx-ido flycheck-pyflakes fold-dwim fold-this format-sql fuzzy ggtags gist
-	      git-timemachine github-browse-file gmail-message-mode go-autocomplete go-direx
-	      go-projectile go-scratch go-stacktracer grip-mode groovy-mode haml-mode helm helm-lsp
-	      hungry-delete hydra ibuffer-vc ido-vertical-mode idomenu iedit imenu-anywhere ioccur
-	      jira js2-highlight-vars js2-refactor json-mode key-chord log4j-mode lsp-intellij
-	      lsp-java lsp-mode lsp-ui lua-mode magit marginalia markdown-mode mmm-mode
-	      multiple-cursors neotree nerd-icons-completion nerd-icons-dired nerd-icons-grep
-	      nerd-icons-ibuffer orderless osx-plist pager persp-projectile pig-mode pig-snippets
-	      pos-tip prettier-js projectile-rails protobuf-mode python-mode rainbow-delimiters
-	      rbenv real-auto-save rspec-mode ruby-end ruby-interpolation ruby-tools rvm scss-mode
-	      smart-tab smartparens smex sql-indent tern toggle-quotes treemacs treemacs-projectile
-	      treesit-auto undo-tree uniquify use-package vertica vertico vterm vundo web-mode wgrep
-	      window-numbering winum writeroom-mode xml-rpc xref-js2 yafolding yaml-mode
-	      yasnippet-snippets))
+   '(abridge-diff ac-etags ace-jump-mode ack add-node-modules-path ag aggressive-indent ai-code
+		  alchemist all-the-icons all-the-icons-completion all-the-icons-dired
+		  all-the-icons-ibuffer auto-indent-mode bm browse-kill-ring buffer-move bundler
+		  cape centered-window closql coffee-mode color-identifiers-mode
+		  color-theme-sanityinc-tomorrow company-go company-shell cond-let consult
+		  consult-lsp corfu crontab-mode csv-mode ctags-update dash-functional diff-hl
+		  doom-modeline doom-themes dracula-theme duplicate-thing ecb edit-server
+		  editorconfig egg eglot eldoc emacsql embrace emmet-mode enh-ruby-mode epc erc
+		  exec-path-from-shell faceup fireplace flx-ido flycheck-pyflakes flymake fold-dwim
+		  fold-this forge format-sql fuzzy ggtags ghub gist git-timemachine
+		  github-browse-file gmail-message-mode go-autocomplete go-direx go-projectile
+		  go-scratch go-stacktracer grip-mode groovy-mode haml-mode helm helm-lsp
+		  hungry-delete hydra ibuffer-vc idlwave ido-vertical-mode idomenu iedit
+		  imenu-anywhere ioccur jira js2-highlight-vars js2-refactor json-mode jsonrpc
+		  key-chord log4j-mode lsp-intellij lsp-java lsp-ui lua-mode magit marginalia
+		  markdown-mode mmm-mode multiple-cursors neotree nerd-icons-completion
+		  nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer orderless osx-plist pager
+		  peg persp-projectile pig-mode pig-snippets pos-tip prettier-js project
+		  projectile-rails protobuf-mode python python-mode rainbow-delimiters rbenv
+		  real-auto-save rspec-mode ruby-end ruby-interpolation ruby-tools rvm scss-mode
+		  smart-tab smartparens smex sql-indent tern toggle-quotes track-changes tramp
+		  treemacs treemacs-projectile treesit-auto undo-tree uniquify use-package
+		  verilog-mode vertica vertico vterm vundo web-mode wgrep which-key window-numbering
+		  window-tool-bar winum writeroom-mode xml-rpc xref-js2 yafolding yaml-mode
+		  yasnippet-snippets))
  '(ps-line-number t)
  '(ps-line-number-color 50)
  '(python-indent-offset 4)
@@ -215,13 +212,6 @@
  '(todo-file-do "~/.emacs.local/todo-do")
  '(todo-file-done "~/.emacs.local/todo-done")
  '(todo-file-top "~/.emacs.local/todo-top")
- '(vc-annotate-background nil)
- '(vc-annotate-color-map
-   '((20 . "#dc322f") (40 . "#cb4b16") (60 . "#b58900") (80 . "#859900") (100 . "#2aa198")
-     (120 . "#268bd2") (140 . "#d33682") (160 . "#6c71c4") (180 . "#dc322f") (200 . "#cb4b16")
-     (220 . "#b58900") (240 . "#859900") (260 . "#2aa198") (280 . "#268bd2") (300 . "#d33682")
-     (320 . "#6c71c4") (340 . "#dc322f") (360 . "#cb4b16")))
- '(vc-annotate-very-old-color nil)
  '(vc-cvs-diff-switches "-up")
  '(vc-diff-switches "-pu")
  '(which-function-mode t)
@@ -258,8 +248,7 @@
  '(nxml-namespace-attribute-xmlns-face ((t (:inherit nxml-name-face :foreground "green"))))
  '(nxml-tag-slash-face ((t (:inherit nxml-name-face))))
  '(semantic-decoration-on-private-members-face ((((class color) (background light)) nil)))
- '(underline ((t (:underline nil))))
- '(which-func ((t (:foreground "gray92")))))
+ '(underline ((t (:underline nil)))))
 
 
 ;; Local Variables:
