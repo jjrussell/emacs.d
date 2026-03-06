@@ -58,10 +58,10 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;;(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
-;; Tell Emacs to always prefer the newest installed package version
-;; instead of the one that ships with emacs.
-(setq package-load-list '((all t)))
+(setq package-install-upgrade-built-in t)
 (package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))

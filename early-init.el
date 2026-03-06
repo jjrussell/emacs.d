@@ -8,3 +8,4 @@
 ;;; Code:
 (defvar my-emacs-start-time (current-time))
 (setq byte-compile-warnings '(not obsolete))
+
