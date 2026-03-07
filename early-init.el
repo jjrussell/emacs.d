@@ -7,5 +7,7 @@
 ;; Try again later.
 ;;; Code:
 (defvar my-emacs-start-time (current-time))
-(setq byte-compile-warnings '(not obsolete))
+(setq byte-compile-warnings nil)
+(setq native-comp-async-report-warnings-errors nil)
+(setq warning-minimum-level :error)
 

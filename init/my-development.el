@@ -130,9 +130,12 @@
 (use-package cape
   :ensure t
   :init
-  (add-hook 'completion-at-point-functions #'cape-dabbrev)
-  (add-hook 'completion-at-point-functions #'cape-file)
-  (add-hook 'completion-at-point-functions #'cape-keyword))
+  (defun my/cape-dabbrev-no-minibuffer () (unless (minibufferp) (cape-dabbrev)))
+  (defun my/cape-file-no-minibuffer () (unless (minibufferp) (cape-file)))
+  (defun my/cape-keyword-no-minibuffer () (unless (minibufferp) (cape-keyword)))
+  (add-hook 'completion-at-point-functions #'my/cape-dabbrev-no-minibuffer)
+  (add-hook 'completion-at-point-functions #'my/cape-file-no-minibuffer)
+  (add-hook 'completion-at-point-functions #'my/cape-keyword-no-minibuffer))
 
 (use-package yasnippet :config (yas-global-mode))
 (use-package yasnippet-snippets :ensure t)
