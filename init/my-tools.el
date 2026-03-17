@@ -193,6 +193,18 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   :ensure t
   :hook (dired-mode . nerd-icons-dired-mode))
 
+(use-package dired
+  :ensure nil
+  :config
+  (put 'dired-find-alternate-file 'disabled nil)
+  :bind (:map dired-mode-map
+              ("RET" . dired-find-alternate-file)
+              ("^" . (lambda () (interactive) (find-alternate-file "..")))))
+
+(use-package dired-x
+  :ensure nil
+  :after dired)
+
 ;; nerd-icons-ibuffer: file type icons in ibuffer
 (use-package nerd-icons-ibuffer
   :ensure t

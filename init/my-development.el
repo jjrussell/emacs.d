@@ -175,6 +175,7 @@
 	 read-process-output-max (* 1024 1024)  ; 1 mb
 	 lsp-completion-provider :capf
 	 lsp-idle-delay 0.500
+	 lsp-response-timeout 30
 	 )
   :config
   (setq lsp-intelephense-multi-root nil) ; don't scan unnecessary projects
@@ -410,6 +411,10 @@ Dependent gems:
   (add-hook hook (lambda ()
                    (setenv "PATH" (mapconcat 'identity exec-path ":"))))
   (add-hook hook #'lsp-deferred))
+
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-ts-mode . lsp-deferred))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
