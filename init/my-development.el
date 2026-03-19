@@ -117,14 +117,14 @@
   (corfu-auto-delay 0.3)
   (corfu-auto-prefix 2)
   (corfu-quit-no-match 'separator)
+  (global-corfu-minibuffer nil)
   :bind (:map corfu-map
               ("TAB" . corfu-next)
               ([tab] . corfu-next)
               ("S-TAB" . corfu-previous)
               ([backtab] . corfu-previous))
   :init
-  (global-corfu-mode)
-  (add-hook 'minibuffer-setup-hook (lambda () (corfu-mode -1))))
+  (global-corfu-mode))
 
 ;; cape: additional completion-at-point sources for corfu
 (use-package cape
@@ -172,6 +172,7 @@
   :init (setq
 	 lsp-keymap-prefix "C-c l"              ; this is for which-key integration documentation, need to use lsp-mode-map
 	 lsp-enable-file-watchers nil
+	 lsp-enable-imenu nil
 	 read-process-output-max (* 1024 1024)  ; 1 mb
 	 lsp-completion-provider :capf
 	 lsp-idle-delay 0.500

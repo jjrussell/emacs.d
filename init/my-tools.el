@@ -420,15 +420,7 @@ at point."
 (use-package grip-mode
   :ensure t
   :config
-  ;; Ensure grip-mode uses xwidgets
-  (setq grip-use-xwidgets t)
-  
-  ;; Force the xwidget/grip buffer to open in a side-by-side split on the right
-  (add-to-list 'display-buffer-alist
-               '("^\\*xwidget-webkit:\\|^\\*grip" 
-                 (display-buffer-in-direction)
-                 (direction . right)
-                 (window-width . 0.5))))
+  (setq grip-preview-use-webkit nil))
 
 
 
