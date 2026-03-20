@@ -113,14 +113,12 @@
 (use-package corfu
   :ensure t
   :custom
-  (corfu-auto t)
-  (corfu-auto-delay 0.3)
-  (corfu-auto-prefix 2)
+  (corfu-auto nil)
   (corfu-quit-no-match 'separator)
   (global-corfu-minibuffer nil)
   :bind (:map corfu-map
-              ("TAB" . corfu-next)
-              ([tab] . corfu-next)
+              ("TAB" . corfu-insert)
+              ([tab] . corfu-insert)
               ("S-TAB" . corfu-previous)
               ([backtab] . corfu-previous))
   :init
