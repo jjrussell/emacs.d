@@ -44,6 +44,10 @@
 (let ((elapsed (float-time (time-subtract (current-time) my-emacs-start-time))))
   (message "Custom.el loaded: %.1f seconds since startup" elapsed))
 
+;; Theme settings for automatic light/dark switching on macOS
+(defvar my-dark-theme 'doom-tomorrow-night "Theme to use when system is in dark mode.")
+(defvar my-light-theme 'doom-tomorrow-day "Theme to use when system is in light mode.")
+
 ;; External programs
 ;; My own terminal script wrapper for xplatform terminal fun
 (defconst my-terminal-program "my-terminal" "What command to execute to get a terminal.")
@@ -1214,11 +1218,20 @@ won't parse the buffer."
 		;; switch between emacs windows with Cmd+`
 		(global-set-key (kbd "s-`") 'other-frame)
 
+		;; Automatically switch theme when macOS toggles light/dark mode
+		(defun my/apply-system-appearance (appearance)
+		  "Load theme based on macOS system APPEARANCE (dark or light)."
+		  (mapc #'disable-theme custom-enabled-themes)
+		  (pcase appearance
+		    ('light (load-theme my-light-theme t))
+		    ('dark  (load-theme my-dark-theme t))))
+		(add-hook 'ns-system-appearance-change-functions #'my/apply-system-appearance)
+
 		;; if emacs is launched from spotlight or quicksilver it gets the
 		;; default-directory / which is useless. Set it to home.
 		(unless (string-match (getenv "HOME") default-directory)
 		  (cd (getenv "HOME"))
-		  
+
 
 		  )))
 	 (cond (my-unixp
