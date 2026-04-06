@@ -461,9 +461,9 @@ Found in comment of http://endlessparentheses.com/implementing-comment-line.html
   (forward-line))
 (global-set-key (kbd "M-;") #'toggle-comment-on-line-or-region)
 
-(defun my-comment-block ()
+(defun my-comment-block (&optional arg)
   "Write a big comment block to the screen.
-Use newcomment package"
+Use newcomment package.  optional ARG creates small comment blocks"
   (interactive "P")
   (indent-according-to-mode)
   (if (or (not comment-start) (not (boundp 'comment-start)))
