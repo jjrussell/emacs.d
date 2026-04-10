@@ -33,3 +33,4 @@ server/
 eln-cache/
 tree-sitter/
 projects
+forge-database.sqlite

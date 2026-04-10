@@ -190,7 +190,8 @@
 		  (interactive)
 		  (kill-this-buffer nil)))
 (global-set-key (kbd "C-c q") 'auto-fill-mode) ; toggle auto-fill-mode
-(global-set-key (kbd "M-`") 'other-frame) ; mac-like frame switching behavior
+(global-set-key (kbd "M-`") 'other-window)
+
 ;; M-0 through M-9 are handled by winum (jump to window by number, M-0 = minibuffer)
 ;; vscode/sublime keybinding and behavior for join lines
 (global-set-key (kbd "C-j") (lambda () (interactive) (join-line t)))
