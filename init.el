@@ -237,7 +237,16 @@
 (add-to-list 'auto-mode-alist '("\\.md" . markdown-mode))
 (with-eval-after-load 'markdown-mode
   (define-key markdown-mode-map (kbd "M-p") nil))
-(add-to-list 'auto-mode-alist '("\\.log" . text-mode)) ;; 
+(add-to-list 'auto-mode-alist '("\\.log" . text-mode)) ;;
+
+(defun my-warn-unrecognized-extension ()
+  "Warn when a file with an extension opens in fundamental-mode."
+  (when (and (eq major-mode 'fundamental-mode)
+             buffer-file-name
+             (string-match "\\.[^.]+\\'" buffer-file-name))
+    (message "Unrecognized extension %s — add to auto-mode-alist in init to set a mode"
+             (match-string 0 buffer-file-name))))
+(add-hook 'find-file-hook #'my-warn-unrecognized-extension)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
