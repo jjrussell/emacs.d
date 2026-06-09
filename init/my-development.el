@@ -174,7 +174,7 @@
 	 read-process-output-max (* 1024 1024)  ; 1 mb
 	 lsp-completion-provider :capf
 	 lsp-idle-delay 0.500
-	 lsp-response-timeout 30
+	 lsp-response-timeout 120
 	 )
   :config
   (setq lsp-intelephense-multi-root nil) ; don't scan unnecessary projects
@@ -183,10 +183,7 @@
   ;;(define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
   )
 (use-package lsp-java
-  :ensure t
-  :config
-  (add-hook 'java-mode-hook 'lsp)
-  (add-hook 'java-ts-mode-hook 'lsp))
+  :ensure t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Go

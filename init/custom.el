@@ -117,6 +117,7 @@
  '(global-smart-tab-mode t)
  '(global-subword-mode t)
  '(global-visual-line-mode t)
+ '(global-window-tool-bar-mode nil)
  '(grep-command "grep -2EInir ")
  '(grep-highlight-matches 'auto-detect)
  '(grep-use-null-device 'auto-detect)
@@ -164,23 +165,23 @@
 		  consult-lsp corfu crontab-mode csv-mode ctags-update dash-functional diff-hl
 		  doom-modeline doom-themes dracula-theme duplicate-thing ecb edit-server
 		  editorconfig egg eglot eldoc emacsql embrace emmet-mode enh-ruby-mode epc erc
-		  exec-path-from-shell faceup fireplace flx-ido flycheck-pyflakes flymake fold-dwim
-		  fold-this forge format-sql fuzzy ggtags ghub gist git-timemachine
-		  github-browse-file gmail-message-mode go-autocomplete go-direx go-projectile
-		  go-scratch go-stacktracer gptel gptel-agent grip-mode groovy-mode haml-mode helm
-		  helm-lsp hungry-delete hydra ibuffer-vc idlwave ido-vertical-mode idomenu iedit
-		  imenu-anywhere ioccur jira js2-highlight-vars js2-refactor json-mode jsonrpc
-		  key-chord log4j-mode lsp-intellij lsp-java lsp-pyright lsp-ui lua-mode magit
-		  marginalia markdown-mode mmm-mode multiple-cursors neotree nerd-icons-completion
-		  nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer orderless osx-plist pager peg
-		  persp-projectile pig-mode pig-snippets pos-tip prettier-js project
-		  projectile-rails protobuf-mode python python-mode rainbow-delimiters rbenv
-		  real-auto-save rspec-mode ruby-end ruby-interpolation ruby-tools rvm scss-mode
-		  smart-tab smartparens smex sql-indent tern toggle-quotes track-changes tramp
-		  treemacs treemacs-projectile treesit-auto undo-tree uniquify use-package
-		  verilog-mode vertica vertico vterm vundo web-mode wgrep which-key window-numbering
-		  window-tool-bar winum writeroom-mode xml-rpc xref-js2 yafolding yaml-mode
-		  yasnippet-snippets))
+		  exec-path-from-shell faceup fireplace flx-ido flycheck flycheck-pyflakes flymake
+		  fold-dwim fold-this forge format-sql fuzzy ggtags ghub gist git-timemachine
+		  github-browse-file gmail-message-mode go-autocomplete go-direx go-mode
+		  go-projectile go-scratch go-stacktracer gptel gptel-agent grip-mode groovy-mode
+		  haml-mode helm helm-lsp hungry-delete hydra ibuffer-vc idlwave ido-vertical-mode
+		  idomenu iedit imenu-anywhere inf-ruby ioccur jira js2-highlight-vars js2-refactor
+		  json-mode jsonrpc key-chord log4j-mode lsp-intellij lsp-java lsp-mode lsp-pyright
+		  lsp-treemacs lsp-ui lua-mode magit marginalia markdown-mode mmm-mode
+		  multiple-cursors neotree nerd-icons-completion nerd-icons-dired nerd-icons-grep
+		  nerd-icons-ibuffer orderless osx-plist pager peg persp-projectile pig-mode
+		  pig-snippets pos-tip prettier-js project projectile projectile-rails protobuf-mode
+		  python python-mode rainbow-delimiters rbenv real-auto-save rspec-mode ruby-end
+		  ruby-interpolation ruby-tools rvm scss-mode smart-tab smartparens smex sql-indent
+		  tern toggle-quotes track-changes tramp treemacs treemacs-projectile treesit-auto
+		  undo-tree uniquify use-package verilog-mode vertica vertico vterm vundo web-mode
+		  wgrep which-key window-numbering window-tool-bar winum writeroom-mode xml-rpc
+		  xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
  '(ps-line-number t)
  '(ps-line-number-color 50)
  '(python-indent-offset 4)

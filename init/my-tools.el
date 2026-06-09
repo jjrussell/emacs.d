@@ -15,7 +15,11 @@
 ;;
 ;; Hydra   definitions
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package hydra
+  :ensure t
+  :demand t)
 
 (defhydra hydra-mine (:exit t :color teal :hint nil)
   ("R" (lambda ()
@@ -221,13 +225,10 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 (use-package doom-themes
   :ensure t
   :config
-  ;; This is the crucial part: load your chosen theme AFTER the package is loaded.
-  (load-theme 'doom-solarized-dark t)
-
-  ;; The treemacs and org integrations are now handled by separate functions.
-  ;; Call the ones you need here.
-  (doom-themes-treemacs-config) ;; For Treemacs
-  (doom-themes-org-config))     ;; For Org Mode
+  (when (fboundp 'my/apply-system-appearance)
+    (my/apply-system-appearance ns-system-appearance))
+  (doom-themes-treemacs-config)
+  (doom-themes-org-config))
 
 ;; Colorize nested braces and things
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
@@ -243,8 +244,10 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 ;;
 ;; Replaces auto-indent
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-(global-aggressive-indent-mode 1)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package aggressive-indent
+  :ensure t
+  :config (global-aggressive-indent-mode 1))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -348,10 +351,9 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   :init (projectile-mode +1)
   :bind-keymap
   ("C-c p" . projectile-command-map)
-  :bind (("M-." . projectile-find-tag)
-         ("M-p" . projectile-find-file)
+  :bind (("M-p" . projectile-find-file)
          ("M-t" . imenu-anywhere)
-         ("M-*" . pop-tag-mark))
+         ("M-*" . xref-go-back))
   :custom
   (projectile-cache-file "~/.emacs.local/projectile.cache")
   (projectile-enable-caching nil)
