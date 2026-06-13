@@ -554,12 +554,42 @@ toggles and would race with this setup)."
 ;; consult: enhanced completing-read commands (replaces ioccur, browse-kill-ring, helm-mini)
 (use-package consult
   :ensure t
-  :bind (("C-x B"   . consult-buffer-other-window)
+  :bind (;; drop-in replacements via remap
+         ([remap switch-to-buffer]          . consult-buffer)
+         ([remap goto-line]                 . consult-goto-line)
+         ([remap yank-pop]                  . consult-yank-pop)
+         ([remap bookmark-jump]             . consult-bookmark)
+         ([remap imenu]                     . consult-imenu)
+         ([remap repeat-complex-command]    . consult-complex-command)
+         ([remap project-switch-to-buffer]  . consult-project-buffer)
+         ([remap Info-search]               . consult-info)
+         ;; additional bindings
+         ("C-x B"   . consult-buffer-other-window)
          ("<C-tab>" . consult-buffer)
-         ("M-y"     . consult-yank-pop)
-         ("M-s i"   . consult-line)
+         ("C-c h"   . consult-buffer)
+         ;; navigation (M-g prefix)
+         ("M-g e"   . consult-compile-error)
+         ("M-g f"   . consult-flymake)
+         ("M-g o"   . consult-outline)
+         ("M-g m"   . consult-mark)
+         ("M-g k"   . consult-global-mark)
+         ("M-g I"   . consult-imenu-multi)
+         ;; search (M-s prefix)
+         ("M-s d"   . consult-find)
+         ("M-s g"   . consult-grep)
+         ("M-s G"   . consult-git-grep)
          ("M-s r"   . consult-ripgrep)
-         ("C-c h"   . consult-buffer))
+         ("M-s l"   . consult-line)
+         ("M-s L"   . consult-line-multi)
+         ("M-s k"   . consult-keep-lines)
+         ("M-s u"   . consult-focus-lines)
+         ;; isearch integration
+         :map isearch-mode-map
+         ("M-e"     . consult-isearch-history)
+         ;; minibuffer history
+         :map minibuffer-local-map
+         ("M-s"     . consult-history)
+         ("M-r"     . consult-history))
   :custom
   (consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=1000 --path-separator / --smart-case --no-heading --with-filename --line-number --search-zip"))
 
@@ -797,9 +827,7 @@ at point."
 ;; perspective: workspaces that scope buffers per project
 (use-package perspective
   :ensure t
-  :bind (("C-x b" . persp-switch-to-buffer*)
-         ("C-x B" . switch-to-buffer)
-         ("C-x C-b" . persp-ibuffer)
+  :bind (("C-x C-b" . persp-ibuffer)
          ("C-x k" . persp-kill-buffer*))
   :custom
   (persp-mode-prefix-key (kbd "C-c M-p"))

@@ -20,8 +20,8 @@
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
    '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode
-                      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
-                      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
+		      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
+		      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
  '(auto-indent-on-yank-or-paste nil)
  '(auto-indent-untabify-on-visit-file t)
  '(auto-save-timeout 30)
@@ -117,9 +117,9 @@
  '(help-window-select t)
  '(hippie-expand-try-functions-list
    '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name
-                           try-expand-all-abbrevs try-expand-list try-expand-dabbrev
-                           try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
-                           try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+			   try-expand-all-abbrevs try-expand-list try-expand-dabbrev
+			   try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
+			   try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(indent-tabs-mode nil)
  '(initial-major-mode 'text-mode)
@@ -147,32 +147,32 @@
  '(nxml-slash-auto-complete-flag t)
  '(package-selected-packages
    '(abridge-diff ac-etags ace-jump-mode ack add-node-modules-path ag agent-shell aggressive-indent
-                  ai-code alchemist all-the-icons all-the-icons-completion all-the-icons-dired
-                  all-the-icons-ibuffer auto-indent-mode bm browse-kill-ring buffer-move bundler
-                  cape centered-window closql coffee-mode color-identifiers-mode
-                  color-theme-sanityinc-tomorrow company-go company-shell cond-let consult
-                  consult-lsp corfu crontab-mode csv-mode ctags-update dash-functional diff-hl
-                  diminish dired-subtree doom-modeline doom-themes dracula-theme duplicate-thing ecb
-                  edit-server editorconfig egg eglot eldoc emacsql embrace emmet-mode enh-ruby-mode
-                  epc erc exec-path-from-shell faceup fireplace flx-ido flycheck flycheck-pyflakes
-                  flymake fold-dwim fold-this forge format-sql fuzzy ggtags ghub gist
-                  git-timemachine github-browse-file gmail-message-mode go-autocomplete go-direx
-                  go-mode go-projectile go-scratch go-stacktracer gptel gptel-agent grip-mode
-                  groovy-mode haml-mode helm helm-lsp hungry-delete hydra ibuffer-vc idlwave
-                  ido-vertical-mode idomenu iedit imenu-anywhere inf-ruby ioccur jira
-                  js2-highlight-vars js2-refactor json-mode jsonrpc key-chord log4j-mode
-                  lsp-intellij lsp-java lsp-mode lsp-pyright lsp-treemacs lsp-ui lua-mode magit
-                  marginalia markdown-mode markdown-toc mixed-pitch mmm-mode multiple-cursors
-                  nerd-icons-completion nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer olivetti
-                  orderless org-modern osx-plist pager peg persp-projectile pig-mode pig-snippets
-                  pos-tip prettier-js project projectile projectile-rails protobuf-mode python
-                  python-mode rainbow-delimiters rbenv real-auto-save rspec-mode ruby-end
-                  ruby-interpolation ruby-tools rvm scss-mode smart-tab smartparens smex sql-indent
-                  string-inflection tern toggle-quotes track-changes tramp transpose-frame treemacs
-                  treemacs-magit treemacs-nerd-icons treemacs-projectile treesit-auto undo-tree
-                  uniquify use-package valign verilog-mode vertica vertico vterm vundo web-mode
-                  wgrep which-key window-numbering window-tool-bar winum writeroom-mode ws-butler
-                  xml-rpc xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
+		  ai-code alchemist all-the-icons all-the-icons-completion all-the-icons-dired
+		  all-the-icons-ibuffer auto-indent-mode bm browse-kill-ring buffer-move bundler
+		  cape centered-window closql coffee-mode color-identifiers-mode
+		  color-theme-sanityinc-tomorrow company-go company-shell cond-let consult
+		  consult-lsp corfu crontab-mode csv-mode ctags-update dash-functional diff-hl
+		  diminish dired-subtree doom-modeline doom-themes dracula-theme duplicate-thing ecb
+		  edit-server editorconfig egg eglot eldoc emacsql embrace emmet-mode enh-ruby-mode
+		  epc erc exec-path-from-shell faceup fireplace flx-ido flycheck flycheck-pyflakes
+		  flymake fold-dwim fold-this forge format-sql fuzzy ggtags ghub gist
+		  git-timemachine github-browse-file gmail-message-mode go-autocomplete go-direx
+		  go-mode go-projectile go-scratch go-stacktracer gptel gptel-agent grip-mode
+		  groovy-mode haml-mode helm helm-lsp hungry-delete hydra ibuffer-vc idlwave
+		  ido-vertical-mode idomenu iedit imenu-anywhere inf-ruby ioccur jira
+		  js2-highlight-vars js2-refactor json-mode jsonrpc key-chord log4j-mode
+		  lsp-intellij lsp-java lsp-mode lsp-pyright lsp-treemacs lsp-ui lua-mode magit
+		  marginalia markdown-mode markdown-toc mixed-pitch mmm-mode multiple-cursors
+		  nerd-icons-completion nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer olivetti
+		  orderless org-modern osx-plist pager peg persp-projectile pig-mode pig-snippets
+		  pos-tip prettier-js project projectile projectile-rails protobuf-mode python
+		  python-mode rainbow-delimiters rbenv real-auto-save rg rspec-mode ruby-end
+		  ruby-interpolation ruby-tools rvm scss-mode smart-tab smartparens smex sql-indent
+		  string-inflection tern toggle-quotes track-changes tramp transpose-frame treemacs
+		  treemacs-magit treemacs-nerd-icons treemacs-projectile treesit-auto undo-tree
+		  uniquify use-package valign verilog-mode vertica vertico vterm vundo web-mode
+		  wgrep which-key window-numbering window-tool-bar winum writeroom-mode ws-butler
+		  xml-rpc xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
  '(ps-line-number t)
  '(ps-line-number-color 50)
  '(python-indent-offset 4)
@@ -217,7 +217,7 @@
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
    '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
-          tab-mark)))
+	  tab-mark)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

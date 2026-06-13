@@ -183,7 +183,7 @@
 
 
 (global-set-key (kbd "M-r") 'replace-string)
-(global-set-key (kbd "M-g") 'goto-line)
+
 
 (global-set-key (kbd "C-S-k")
                 (lambda ()
