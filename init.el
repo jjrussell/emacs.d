@@ -73,8 +73,7 @@
 (require 'bind-key)
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
-
-
+(setq auth-sources '("~/.authinfo"))
 
 ;; Just in case these directories aren't there yet create them.
 ;; If localstore doesn't exsist emacs won't exit correctly, which is really annoying
@@ -157,6 +156,7 @@
                                         ; confirm-kill-emacs 'y-or-n-p ; prompt to exit
  )
 (fset 'yes-or-no-p 'y-or-n-p) ; Make all "yes or no" prompts "y or n" instead
+(setq register-preview-delay 0)
 ;; this fixes the meta key with ubuntu on the macbook
 ;;(setq x-super-keysym 'meta)
 
@@ -197,14 +197,24 @@
 (global-set-key (kbd "C-j") (lambda () (interactive) (join-line t)))
 (global-set-key [3 9] (lambda () (interactive) (insert-tab))) ; Control-C TAB as a vector
 
-;; set split window keys to behave like tmux
-(global-set-key (kbd "C-x -")  'split-window-vertically)
-(global-set-key (kbd "C-x |")  'split-window-horizontally)
-(global-set-key (kbd "C-x \\")  'split-window-horizontally)
+(defun my/split-below-and-focus ()
+  (interactive)
+  (split-window-vertically)
+  (other-window 1))
 
-;; override defaults to select the newly created buffer when splitting
-(global-set-key (kbd "C-x 2")  'split-window-vertically)
-(global-set-key (kbd "C-x 3")  'split-window-horizontally)
+(defun my/split-right-and-focus ()
+  (interactive)
+  (split-window-horizontally)
+  (other-window 1))
+
+;; set split window keys to behave like tmux
+(global-set-key (kbd "C-x -")  'my/split-below-and-focus)
+(global-set-key (kbd "C-x |")  'my/split-right-and-focus)
+(global-set-key (kbd "C-x \\")  'my/split-right-and-focus)
+
+;; override defaults to select the newly created window when splitting
+(global-set-key (kbd "C-x 2")  'my/split-below-and-focus)
+(global-set-key (kbd "C-x 3")  'my/split-right-and-focus)
 
 (global-set-key (kbd "<C-S-right>")  'windmove-right)
 (global-set-key (kbd "<C-S-left>")  'windmove-left)
@@ -234,13 +244,12 @@
 (add-to-list 'auto-mode-alist '("notes\\.txt" . outline-mode))
 (add-to-list 'auto-mode-alist '("httpd.conf" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.ds" . lisp-mode)) ; devilspie config
-(add-to-list 'auto-mode-alist '("\\.md" . markdown-mode))
-(with-eval-after-load 'markdown-mode
-  (define-key markdown-mode-map (kbd "M-p") nil))
+;; markdown-mode setup (auto-mode, key bindings, prettification) lives in
+;; init/my-tools.el as a use-package block.
 (add-to-list 'auto-mode-alist '("\\.log" . text-mode)) ;;
 
 (defun my-warn-unrecognized-extension ()
-  "Warn when a file with an extension opens in fundamental-mode."
+  "Warn when a file with an extension opens in `fundamental-mode'."
   (when (and (eq major-mode 'fundamental-mode)
              buffer-file-name
              (string-match "\\.[^.]+\\'" buffer-file-name))
@@ -347,7 +356,11 @@
 (global-set-key (kbd "C-c t") 'visit-term-buffer)
 
 (defun my-home ()
-  "Home - begin of text, once more - begin of line, once more - screen,once more - buffer."
+  "Hit repeatedly to go further home.
+Home - begin of text
+once more - begin of line
+once more - screen
+once more - buffer."
   (interactive)
   (cond
    ((and (eq last-command 'my-home) (eq last-last-command 'my-home)

@@ -34,3 +34,6 @@ eln-cache/
 tree-sitter/
 projects
 forge-database.sqlite
+/.agent-shell/
+agent/
+perspectives

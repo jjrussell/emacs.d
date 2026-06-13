@@ -20,8 +20,8 @@
  '(auto-indent-blank-lines-on-move nil)
  '(auto-indent-disabled-modes-list
    '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode
-		      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
-		      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
+                      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
+                      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
  '(auto-indent-on-yank-or-paste nil)
  '(auto-indent-untabify-on-visit-file t)
  '(auto-save-timeout 30)
@@ -43,13 +43,6 @@
      ".lo" ".la" ".gmo" ".mo" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys"
      ".pgs" ".tps" ".vrs" ".pyc" ".pyo" ".copyarea.db"))
  '(css-indent-offset 2)
- '(cua-auto-mark-last-change t)
- '(cua-enable-cua-keys nil)
- '(cua-enable-cursor-indications t)
- '(cua-mode t nil (cua-base))
- '(cua-normal-cursor-color "green")
- '(cua-prefix-override-inhibit-delay 1)
- '(cua-read-only-cursor-color "red")
  '(custom-safe-themes
    '("5c8a1b64431e03387348270f50470f64e28dfae0084d33108c33a81c1e126ad6"
      "6bdc4e5f585bb4a500ea38f563ecf126570b9ab3be0598bdf607034bb07a8875"
@@ -124,9 +117,9 @@
  '(help-window-select t)
  '(hippie-expand-try-functions-list
    '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name
-			   try-expand-all-abbrevs try-expand-list try-expand-dabbrev
-			   try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
-			   try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+                           try-expand-all-abbrevs try-expand-list try-expand-dabbrev
+                           try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
+                           try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(indent-tabs-mode nil)
  '(initial-major-mode 'text-mode)
@@ -142,10 +135,6 @@
  '(message-auto-save-directory "~/.emacs.local/Mail/drafts/")
  '(message-directory "~/.emacs.local/Mail/")
  '(minibuffer-auto-raise nil)
- '(mode-line-format
-   '("%e " mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified
-     mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   "
-     mode-line-position (vc-mode vc-mode) mode-line-misc-info mode-line-modes mode-line-end-spaces))
  '(mouse-scroll-min-lines 2)
  '(mouse-wheel-progressive-speed t)
  '(neo-autorefresh t)
@@ -158,30 +147,32 @@
  '(nxml-slash-auto-complete-flag t)
  '(package-selected-packages
    '(abridge-diff ac-etags ace-jump-mode ack add-node-modules-path ag agent-shell aggressive-indent
-		  ai-code alchemist all-the-icons all-the-icons-completion all-the-icons-dired
-		  all-the-icons-ibuffer auto-indent-mode bm browse-kill-ring buffer-move bundler
-		  cape centered-window closql coffee-mode color-identifiers-mode
-		  color-theme-sanityinc-tomorrow company-go company-shell cond-let consult
-		  consult-lsp corfu crontab-mode csv-mode ctags-update dash-functional diff-hl
-		  doom-modeline doom-themes dracula-theme duplicate-thing ecb edit-server
-		  editorconfig egg eglot eldoc emacsql embrace emmet-mode enh-ruby-mode epc erc
-		  exec-path-from-shell faceup fireplace flx-ido flycheck flycheck-pyflakes flymake
-		  fold-dwim fold-this forge format-sql fuzzy ggtags ghub gist git-timemachine
-		  github-browse-file gmail-message-mode go-autocomplete go-direx go-mode
-		  go-projectile go-scratch go-stacktracer gptel gptel-agent grip-mode groovy-mode
-		  haml-mode helm helm-lsp hungry-delete hydra ibuffer-vc idlwave ido-vertical-mode
-		  idomenu iedit imenu-anywhere inf-ruby ioccur jira js2-highlight-vars js2-refactor
-		  json-mode jsonrpc key-chord log4j-mode lsp-intellij lsp-java lsp-mode lsp-pyright
-		  lsp-treemacs lsp-ui lua-mode magit marginalia markdown-mode mmm-mode
-		  multiple-cursors neotree nerd-icons-completion nerd-icons-dired nerd-icons-grep
-		  nerd-icons-ibuffer orderless osx-plist pager peg persp-projectile pig-mode
-		  pig-snippets pos-tip prettier-js project projectile projectile-rails protobuf-mode
-		  python python-mode rainbow-delimiters rbenv real-auto-save rspec-mode ruby-end
-		  ruby-interpolation ruby-tools rvm scss-mode smart-tab smartparens smex sql-indent
-		  tern toggle-quotes track-changes tramp treemacs treemacs-projectile treesit-auto
-		  undo-tree uniquify use-package verilog-mode vertica vertico vterm vundo web-mode
-		  wgrep which-key window-numbering window-tool-bar winum writeroom-mode xml-rpc
-		  xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
+                  ai-code alchemist all-the-icons all-the-icons-completion all-the-icons-dired
+                  all-the-icons-ibuffer auto-indent-mode bm browse-kill-ring buffer-move bundler
+                  cape centered-window closql coffee-mode color-identifiers-mode
+                  color-theme-sanityinc-tomorrow company-go company-shell cond-let consult
+                  consult-lsp corfu crontab-mode csv-mode ctags-update dash-functional diff-hl
+                  diminish dired-subtree doom-modeline doom-themes dracula-theme duplicate-thing ecb
+                  edit-server editorconfig egg eglot eldoc emacsql embrace emmet-mode enh-ruby-mode
+                  epc erc exec-path-from-shell faceup fireplace flx-ido flycheck flycheck-pyflakes
+                  flymake fold-dwim fold-this forge format-sql fuzzy ggtags ghub gist
+                  git-timemachine github-browse-file gmail-message-mode go-autocomplete go-direx
+                  go-mode go-projectile go-scratch go-stacktracer gptel gptel-agent grip-mode
+                  groovy-mode haml-mode helm helm-lsp hungry-delete hydra ibuffer-vc idlwave
+                  ido-vertical-mode idomenu iedit imenu-anywhere inf-ruby ioccur jira
+                  js2-highlight-vars js2-refactor json-mode jsonrpc key-chord log4j-mode
+                  lsp-intellij lsp-java lsp-mode lsp-pyright lsp-treemacs lsp-ui lua-mode magit
+                  marginalia markdown-mode markdown-toc mixed-pitch mmm-mode multiple-cursors
+                  nerd-icons-completion nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer olivetti
+                  orderless org-modern osx-plist pager peg persp-projectile pig-mode pig-snippets
+                  pos-tip prettier-js project projectile projectile-rails protobuf-mode python
+                  python-mode rainbow-delimiters rbenv real-auto-save rspec-mode ruby-end
+                  ruby-interpolation ruby-tools rvm scss-mode smart-tab smartparens smex sql-indent
+                  string-inflection tern toggle-quotes track-changes tramp transpose-frame treemacs
+                  treemacs-magit treemacs-nerd-icons treemacs-projectile treesit-auto undo-tree
+                  uniquify use-package valign verilog-mode vertica vertico vterm vundo web-mode
+                  wgrep which-key window-numbering window-tool-bar winum writeroom-mode ws-butler
+                  xml-rpc xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
  '(ps-line-number t)
  '(ps-line-number-color 50)
  '(python-indent-offset 4)
@@ -226,7 +217,7 @@
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
    '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
-	  tab-mark)))
+          tab-mark)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

@@ -14,11 +14,30 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package magit
-  :commands magit-status)
+  :ensure t
+  :bind (("C-c g" . magit-file-dispatch)
+         (:map magit-status-mode-map
+               ("q" . my/magit-quit-session)))
+  :config
+  (defun my/magit-fullscreen (orig-fun &rest args)
+    "Save window config, run magit-status, then delete other windows."
+    (window-configuration-to-register :magit-fullscreen)
+    (apply orig-fun args)
+    (delete-other-windows))
+
+  (advice-add 'magit-status :around #'my/magit-fullscreen)
+
+  (defun my/magit-quit-session ()
+    "Restore the previous window configuration and kill the magit buffer."
+    (interactive)
+    (kill-buffer)
+    (jump-to-register :magit-fullscreen)))
 
 (use-package forge
   :ensure t
-  :after magit)
+  :after magit
+  :init
+  (setq forge-add-default-sections nil))
 
 (use-package diff-hl
   :ensure t
@@ -154,7 +173,14 @@
   :init (setq lsp-ui-doc-delay 1.5
 	      lsp-ui-doc-position 'bottom
               lsp-ui-doc-max-width 100
-	      ))
+              lsp-ui-peek-list-width 80)
+  :config
+  (defun my-lsp-ui-peek--truncate-right (len s)
+    "Truncate S from the left so the rightmost LEN chars are visible."
+    (if (> (string-width s) len)
+        (concat ".." (substring s (- (length s) (max (- len 2) 0))))
+      s))
+  (advice-add 'lsp-ui-peek--truncate :override #'my-lsp-ui-peek--truncate-right))
 (use-package consult-lsp
   :ensure t
   :after (lsp-mode consult)
@@ -170,7 +196,9 @@
   :init (setq
 	 lsp-keymap-prefix "C-c l"              ; this is for which-key integration documentation, need to use lsp-mode-map
 	 lsp-enable-file-watchers nil
-	 lsp-enable-imenu nil
+	 lsp-enable-imenu t
+	 lsp-progress-via-spinner t
+	 lsp-headerline-breadcrumb-enable nil
 	 read-process-output-max (* 1024 1024)  ; 1 mb
 	 lsp-completion-provider :capf
 	 lsp-idle-delay 0.500
@@ -183,7 +211,9 @@
   ;;(define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
   )
 (use-package lsp-java
-  :ensure t)
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.class)\\'" . java-ts-mode)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Go
