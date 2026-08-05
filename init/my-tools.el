@@ -72,6 +72,7 @@
   ("q"  nil "cancel" :color blue :column "Hydra") )
 (global-set-key (kbd "C-x d") 'hydra-mine/body)
 
+(when nil  ; ─── DISABLED: hydra-lsp (replaced by hydra-eglot below) ──────────
 (defhydra hydra-lsp (:exit t :hint nil)
   "
  Buffer^^               Server^^                   Symbol
@@ -95,6 +96,31 @@
   ("M-s" lsp-describe-session)
   ("M-r" lsp-workspace-restart)
   ("S" lsp-workspace-shutdown))
+) ; ─── END DISABLED hydra-lsp ────────────────────────────────────────────────
+
+(defhydra hydra-eglot (:exit t :hint nil)
+  "
+ Buffer^^               Server^^                   Symbol
+-------------------------------------------------------------------------------------
+ [_f_] format           [_r_] reconnect            [_d_] find-def     [_i_] find-impl    [_o_] eldoc
+ [_F_] diagnostics      [_S_] shutdown             [_R_] find-refs    [_t_] find-type    [_n_] rename
+ [_x_] code action      [_e_] events buffer"
+  ("d" xref-find-definitions)
+  ("R" xref-find-references)
+  ("i" eglot-find-implementation)
+  ("t" eglot-find-typeDefinition)
+  ("n" eglot-rename)
+  ("o" eldoc-doc-buffer)
+
+  ("f" eglot-format-buffer)
+  ("F" flymake-show-buffer-diagnostics)
+  ("x" eglot-code-actions)
+
+  ("r" eglot-reconnect)
+  ("S" eglot-shutdown)
+  ("e" eglot-events-buffer))
+
+(global-set-key (kbd "C-c l") 'hydra-eglot/body)
 
 (defhydra hydra-projectile (:color teal
                                    :hint nil)
@@ -237,6 +263,19 @@ toggles and would race with this setup)."
   ;; valign aligns tables on-screen only, leaving the raw text untouched.
   (valign-mode 1))
 
+(defun my-markdown-next-checkbox ()
+  "Move point inside the next GFM checkbox [ ]."
+  (interactive)
+  (when (re-search-forward "^\\s-*[-*+] \\[\\([ xX]\\)\\]" nil t)
+    (goto-char (match-beginning 1))))
+
+(defun my-markdown-prev-checkbox ()
+  "Move point inside the previous GFM checkbox [ ]."
+  (interactive)
+  (beginning-of-line)
+  (when (re-search-backward "^\\s-*[-*+] \\[\\([ xX]\\)\\]" nil t)
+    (goto-char (match-beginning 1))))
+
 (use-package markdown-mode
   :ensure t
   :mode ("\\.md\\'" . gfm-mode) ; GitHub-Flavored Markdown (derived from markdown-mode)
@@ -249,6 +288,10 @@ toggles and would race with this setup)."
   :hook (markdown-mode . my-markdown-visual-tweaks)
   :bind (:map markdown-mode-map
               ("M-p" . nil)                          ; free M-p (was markdown-previous-link)
+              ("M-[" . markdown-promote)
+              ("M-]" . markdown-demote)
+              ("C-M-n" . my-markdown-next-checkbox)
+              ("C-M-p" . my-markdown-prev-checkbox)
               ("C-c m f" . my-markdown-set-prose-font)    ; pick a font by name
               ("C-c m c" . my-markdown-cycle-prose-font)  ; cycle to next candidate
               ("C-c m h" . markdown-toggle-markup-hiding)  ; show/hide raw markup
@@ -954,6 +997,299 @@ at point."
 ;;                                   (dired-single-magic-buffer
 ;;                                    default-directory))))
 ;; (global-set-key [(shift f5)] 'dired-single-toggle-buffer-name)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; agent-shell: AI agent interface (Claude Code, Codex, Gemini)
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar my/worktree-root "~/src/wt/"
+  "Root directory for centralized worktrees.")
+
+(use-package agent-shell
+  :demand t
+  :bind
+  ("C-c s" . agent-shell-help-menu)
+  (:map projectile-command-map
+        ("<SPC>" . my/agent-shell-dwim)
+        ("@" . agent-shell-send-current-file))
+  (:map agent-shell-mode-map
+        ("RET" . newline)
+        ("C-c C-c" . shell-maker-submit)
+        ("C-c C-k" . agent-shell-interrupt)
+        ("C-x n" . agent-shell-prompt-compose))
+
+  :custom
+  (visual-fill-column-width 120)
+  (agent-shell-confirm-interrupt nil)
+  (agent-shell-prefer-session-resume nil)
+  (agent-shell-preferred-agent-config 'claude-code)
+  (agent-shell-google-authentication (agent-shell-google-make-authentication :login t))
+  (agent-shell-openai-authentication
+   (agent-shell-openai-make-authentication
+    :codex-api-key (lambda ()
+                     (string-trim
+                      (shell-command-to-string "hsauthctl idp get-token")))))
+  (agent-shell-context-sources '(files region error))
+  (agent-shell-agent-configs
+   (list (agent-shell-anthropic-make-claude-code-config)
+         (agent-shell-openai-make-codex-config)
+         (agent-shell-google-make-gemini-config)))
+  (agent-shell-mcp-servers '(((name . "linear")
+                              (type . "http")
+                              (headers . [])
+                              (url . "https://mcp.linear.app/mcp"))))
+
+  :hook
+  (agent-shell-mode . my/agent-shell-bind-to-project-persp)
+
+  :config
+  (defun my/agent-shell-dwim (&optional arg)
+    "Smart agent-shell dispatcher.
+
+   With prefix ARG, delegate to `agent-shell' with the prefix.
+   If in an agent-shell buffer, switch to the previous buffer without closing the window.
+   If the project's agent shell is visible but not focused, focus it.
+   If the project's agent shell exists but is not visible, toggle it.
+   Otherwise start a new shell with `agent-shell'."
+    (interactive "P")
+    (let* ((shell-buffers (agent-shell-project-buffers))
+           (visible-window (cl-some (lambda (buf) (get-buffer-window buf)) shell-buffers)))
+      (cond
+       (arg
+        (agent-shell arg))
+       ((derived-mode-p 'agent-shell-mode)
+        (switch-to-prev-buffer))
+       (visible-window
+        (select-window visible-window))
+       (shell-buffers
+        (agent-shell-toggle))
+       (t
+        (agent-shell)))))
+
+  (defvar my/persp-allow-agent-shell nil
+    "Let-bound to t when explicitly adding an agent-shell to a perspective.")
+
+  (defun my/persp-skip-agent-shell (orig-fun buffer-or-name)
+    "Advice: skip auto-adding `agent-shell-mode' buffers to perspectives.
+   Bypassed when `my/persp-allow-agent-shell' is non-nil."
+    (let ((buffer (get-buffer buffer-or-name)))
+      (unless (and buffer
+                   (not my/persp-allow-agent-shell)
+                   (with-current-buffer buffer
+                     (derived-mode-p 'agent-shell-mode)))
+        (funcall orig-fun buffer-or-name))))
+  (with-eval-after-load 'perspective
+    (advice-add 'persp-add-buffer :around #'my/persp-skip-agent-shell))
+
+  (defun my/agent-shell-bind-to-project-persp ()
+    "On spawn, add the new agent-shell to its project's perspective if present."
+    (when (and (bound-and-true-p persp-mode)
+               (fboundp 'projectile-project-name))
+      (let ((name (ignore-errors (projectile-project-name))))
+        (when (and name (member name (persp-names)))
+          (let ((my/persp-allow-agent-shell t))
+            (with-perspective name
+              (persp-add-buffer (current-buffer))))))))
+
+  (defun my/agent-shell-focus-input (_frame)
+    "Focus the latest permission button or input area in agent-shell buffers."
+    (when (derived-mode-p 'agent-shell-mode)
+      (or (agent-shell-jump-to-latest-permission-button-row)
+          (goto-char (point-max)))))
+
+  (add-hook 'window-selection-change-functions #'my/agent-shell-focus-input))
+
+;; Hide/show tool call blocks in agent-shell buffers.
+;;
+;; Tool calls are identified by the presence of an :inverse-video face in
+;; their label-left — that's the status box ([done], [running], etc.) that
+;; agent-shell renders only for tool calls, not for thought or message blocks.
+;;
+;; Each block is tagged with a `my/tool-call-block' text property at render
+;; time via `agent-shell-section-functions'.  The toggle command then walks
+;; the buffer flipping the `invisible' property on those regions.
+
+(defvar-local my/agent-shell-tool-calls-hidden nil
+  "Non-nil when tool call blocks are hidden in this buffer.")
+
+(defun my/agent-shell--tool-call-section-p (range)
+  "Return non-nil if RANGE is a tool call block.
+Detected by scanning the label-left region for an :inverse-video face,
+which is unique to tool call status boxes."
+  (when-let* ((ll (map-elt range :label-left))
+              (start (map-elt ll :start))
+              (end (map-elt ll :end)))
+    (catch 'found
+      (let ((pos start))
+        (while (< pos end)
+          (let ((face (get-text-property pos 'font-lock-face)))
+            (when (and (listp face) (member '(:inverse-video t) face))
+              (throw 'found t)))
+          (setq pos (or (next-single-property-change pos 'font-lock-face nil end)
+                        end)))))))
+
+(defun my/agent-shell--tag-section (range)
+  "Tag tool call blocks for later hiding.
+Called from `agent-shell-section-functions' with inhibit-read-only already t."
+  (when (my/agent-shell--tool-call-section-p range)
+    (let* ((padding (map-elt range :padding))
+           (block (map-elt range :block))
+           (start (or (map-elt padding :start) (map-elt block :start)))
+           (end (map-elt block :end)))
+      (when (and start end)
+        (put-text-property start end 'my/tool-call-block t)
+        (when my/agent-shell-tool-calls-hidden
+          (put-text-property start end 'invisible 'my-tool-call-hidden))))))
+
+(add-hook 'agent-shell-section-functions #'my/agent-shell--tag-section)
+
+(defun my/agent-shell-toggle-tool-calls ()
+  "Toggle visibility of tool call blocks in the current agent-shell buffer.
+When hidden, new tool calls arriving during the session are also hidden
+automatically.  Individual blocks can still be expanded with TAB when
+visible."
+  (interactive)
+  (let ((inhibit-read-only t)
+        (hide (not my/agent-shell-tool-calls-hidden)))
+    (save-excursion
+      (let ((pos (point-min)))
+        (while (< pos (point-max))
+          (if (get-text-property pos 'my/tool-call-block)
+              (let ((end (or (next-single-property-change pos 'my/tool-call-block nil (point-max))
+                             (point-max))))
+                (put-text-property pos end 'invisible (if hide 'my-tool-call-hidden nil))
+                (setq pos end))
+            (setq pos (or (next-single-property-change pos 'my/tool-call-block nil (point-max))
+                          (point-max)))))))
+    (setq my/agent-shell-tool-calls-hidden hide)
+    (message "Tool calls %s" (if hide "hidden" "visible"))))
+
+(with-eval-after-load 'agent-shell
+  (keymap-set agent-shell-mode-map "C-c h" #'my/agent-shell-toggle-tool-calls))
+
+
+;; Clean up agent-shell buffers from perspectives
+(defun my/persp-evict-agent-shells ()
+  "Remove all `agent-shell-mode' buffers from every perspective."
+  (interactive)
+  (dolist (buf (buffer-list))
+    (when (with-current-buffer buf (derived-mode-p 'agent-shell-mode))
+      (cl-loop for p being the hash-values of (perspectives-hash)
+               do (with-perspective (persp-name p)
+                    (persp-forget-buffer buf))))))
+
+;; agent-shell-manager: sidebar to list and switch between agent shells
+(use-package agent-shell-manager
+  :vc (:url "https://github.com/jethrokuan/agent-shell-manager" :rev :newest)
+  :after agent-shell
+  :bind
+  ("C-c S" . agent-shell-manager-toggle)
+  (:map agent-shell-mode-map
+        ("C-c S" . agent-shell-manager-toggle))
+  (:map agent-shell-manager-mode-map
+        ("C-g" . quit-window))
+  :custom
+  (agent-shell-manager-side 'bottom)
+  (agent-shell-manager-transient t))
+
+;; agent-shell dashboard: tile all agent-shell buffers in a grid
+(defun my/tile-agent-shells ()
+  "Tile all agent-shell buffers in a grid in the current frame."
+  (interactive)
+  (let ((bufs (seq-filter
+               (lambda (b)
+                 (eq (buffer-local-value 'major-mode b) 'agent-shell-mode))
+               (buffer-list))))
+    (when (null bufs)
+      (user-error "No agent-shell buffers found"))
+    (delete-other-windows)
+    (let* ((n (length bufs))
+           (cols (ceiling (sqrt n)))
+           (rows (ceiling (/ (float n) cols))))
+      (dotimes (_ (1- rows))
+        (split-window-below))
+      (balance-windows)
+      (let ((row-wins (window-list nil 'no-mini)))
+        (dolist (w row-wins)
+          (select-window w)
+          (dotimes (_ (1- cols))
+            (split-window-right))))
+      (balance-windows)
+      (let ((all-wins (window-list nil 'no-mini)))
+        (cl-loop for buf in bufs
+                 for win in all-wins
+                 do (set-window-buffer win buf))
+        (cl-loop for win in (nthcdr n all-wins)
+                 do (delete-window win))))))
+
+(defun my/agent-shell-perspective ()
+  "Switch to (or create) an 'agents' perspective with tiled agent-shell buffers."
+  (interactive)
+  (persp-switch "agents")
+  (my/tile-agent-shells))
+
+(bind-key "C-c M-a" #'my/agent-shell-perspective)
+
+;; agent-shell-macext: macOS-native notifications and file handling
+(use-package agent-shell-macext
+  :vc (:url "https://github.com/cxa/agent-shell-macext" :rev :newest)
+  :hook (agent-shell-mode . agent-shell-macext-setup)
+  :custom
+  (agent-shell-macext-file-copy-policy 'always-original)
+  (agent-shell-macext-notifications t)
+  (agent-shell-macext-notify-current-buffer nil))
+
+;; dispatch-task: pick or create a worktree, then start an agent-shell in it
+(defun my/worktree-repo-name ()
+  "Return the basename of the current repo's toplevel directory."
+  (when-let ((root (magit-toplevel)))
+    (file-name-nondirectory (directory-file-name root))))
+
+(defun my/worktree-list-external ()
+  "Return alist of (PATH . BRANCH) for worktrees under `my/worktree-root' for the current repo."
+  (when-let ((repo (my/worktree-repo-name)))
+    (let ((prefix (expand-file-name (file-name-concat my/worktree-root repo))))
+      (seq-filter
+       (lambda (entry)
+         (string-prefix-p prefix (car entry)))
+       (mapcar (lambda (wt)
+                 (let* ((path (car wt))
+                        (branch (nth 2 wt)))
+                   (cons path (or branch "(detached)"))))
+               (magit-list-worktrees))))))
+
+(defun my/dispatch-task ()
+  "Pick or create a worktree, then start an agent-shell in it."
+  (interactive)
+  (unless (magit-toplevel)
+    (user-error "Not in a git repository"))
+  (let* ((repo (my/worktree-repo-name))
+         (existing (my/worktree-list-external))
+         (new-label "[new worktree]")
+         (choices (cons
+                   (cons new-label nil)
+                   (mapcar (lambda (entry)
+                             (let ((dir (file-name-nondirectory
+                                         (directory-file-name (car entry))))
+                                   (branch (cdr entry)))
+                               (cons (format "%s (%s)" dir branch)
+                                     (car entry))))
+                           existing)))
+         (choice (completing-read "Worktree: " choices nil t))
+         (worktree-path
+          (or (alist-get choice choices nil nil #'string=)
+              (let* ((branch (read-string "Branch name: "))
+                     (path (expand-file-name
+                            (file-name-concat my/worktree-root repo branch))))
+                (make-directory (file-name-directory path) t)
+                (magit-worktree-branch path branch "HEAD")
+                (unless (file-exists-p path)
+                  (user-error "Failed to create worktree at %s" path))
+                path))))
+    (persp-switch (file-name-nondirectory (directory-file-name worktree-path)))
+    (agent-shell--new-shell :location worktree-path)))
+
 (provide 'my-tools)
 (message "Done loading my-tools.el")
 

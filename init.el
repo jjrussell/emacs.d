@@ -29,7 +29,7 @@
 
 ;; set root of personal emacs repository and common directories used
 ;; in functions and other variables below
-(defconst user-emacs-directory (expand-file-name ".emacs.d" "~"))
+(defconst user-emacs-directory (file-name-as-directory (expand-file-name ".emacs.d" "~")))
 (defconst my-emacs-init-dir (expand-file-name "init" user-emacs-directory))
 (defconst my-site-lisp-dir (expand-file-name "site-lisp" user-emacs-directory))
 
@@ -114,6 +114,14 @@
 (scroll-bar-mode -1)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
+
+;; Smooth trackpad scrolling (Emacs 29+). Pixel-precise scrolling that
+;; respects macOS trackpad momentum instead of jumping by lines.
+(pixel-scroll-precision-mode 1)
+(setq pixel-scroll-precision-use-momentum t) ; honor macOS momentum scrolling
+(setq pixel-scroll-precision-large-scroll-height nil) ; fall back to line jump for very large scrolls
+(setq pixel-scroll-precision-interpolation-total-time 0.05) ; snappier animation
+(setq pixel-scroll-precision-interpolation-factor 1.0)
 (blink-cursor-mode -1) ; WHY WOULD ANYONE DO THAT!? WITH THE BLINKING AND THE FLASHING!!
 
 ;; Removing whitespace on save is a good idea but it produces a lot of noise in diffs with other people's files
@@ -841,6 +849,18 @@ indent to spaces instead of tabs -- tab size 4"
   (setq tab-width 4)
   (c-set-offset 'substatement-open 0)
   (c-set-offset 'inline-open 0))
+
+(defun set-indent-java ()
+  "2-space indent for Java (HubSpot Java Format standard)."
+  (interactive)
+  (setq indent-tabs-mode nil)
+  (setq c-basic-offset 2)
+  (setq tab-width 2)
+  (when (fboundp 'c-set-offset)
+    (c-set-offset 'substatement-open 0)
+    (c-set-offset 'inline-open 0))
+  (when (boundp 'java-ts-mode-indent-offset)
+    (setq-local java-ts-mode-indent-offset 2)))
 
 (defun region-length ()
   "Compute the length of the marked region"
