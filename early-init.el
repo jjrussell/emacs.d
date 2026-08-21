@@ -11,3 +11,9 @@
 (setq native-comp-async-report-warnings-errors nil)
 (setq warning-minimum-level :error)
 
+;; Never paint a native tool-bar on any frame (initial, subsequent, or
+;; emacsclient). Pinning this in default-frame-alist before the first frame is
+;; created suppresses the startup flash and the macOS titlebar toolbar capsule,
+;; which the later (tool-bar-mode -1) in init.el alone does not prevent.
+(push '(tool-bar-lines . 0) default-frame-alist)
+

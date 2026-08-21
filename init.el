@@ -34,7 +34,7 @@
 (defconst my-site-lisp-dir (expand-file-name "site-lisp" user-emacs-directory))
 
 (defconst my-emacs-local-store (expand-file-name ".emacs.local" "~") "Place where local stuff is kept e.g. desktop definitions.")
-(defconst emacs-tmp-dir (expand-file-name "tmp" my-emacs-local-store) "Junk place for auto-save files.")
+(defconst emacs-tmp-dir (file-name-as-directory (expand-file-name "tmp" my-emacs-local-store)) "Junk place for auto-save files.")
 (make-directory emacs-tmp-dir t)
 
 ;; Tell customize to use a separate file
@@ -149,7 +149,13 @@
  native-comp-async-report-warnings-errors 'silent
  ;; death to all temp files https://www.emacswiki.org/emacs/AutoSave
  backup-directory-alist `((".*" . ,emacs-tmp-dir))
- auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
+  ;; Use a sha1 hash (not `t') for the uniquified name.  `t' encodes the
+  ;; full path by replacing "/" with "!" in a single filename component;
+  ;; for eglot-java jar buffers (buffer-file-name is a huge
+  ;; jdt "...class?=<entire classpath>" URI) that component blows past
+  ;; macOS's 255-byte NAME_MAX and `after-find-file' dies with
+  ;; "Getting attributes: File name too long".  A hash is fixed-length.
+  auto-save-file-name-transforms `((".*" ,emacs-tmp-dir sha1))
  auto-save-list-file-prefix emacs-tmp-dir
  ;; old variable. Still needed 2019-01-04
  ;; auto-save-directory (concat my-emacs-local-store "/auto-save-list")

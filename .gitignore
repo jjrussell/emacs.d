@@ -37,3 +37,4 @@ forge-database.sqlite
 /.agent-shell/
 agent/
 perspectives
+eglot-java-eclipse-jdt-cache

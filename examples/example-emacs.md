@@ -1,0 +1,21 @@
+- install and configure dired-subtree
+- what is council
+- ivy with council
+  - I'm using vertico
+- council-fzf
+- AVY - for navigation - AVY can do anything, you're using AVY wrong article
+- Perspective.el works with projectile
+  - projectile switch project can switch perspectives
+  - persp-perjectile is a coupling package
+- which-key.el
+- doom-modeline or just configure mine not to be so damn busy
+- diminish.el
+
+- magit
+  - forge auth is using the wrong username (jjrussell instead of jorussell_hubspot)
+  - full screen and window restore in evan's settings.org my/magit-fullscreen function
+  - map magit-file-dispatch to a keybinding
+- set jump-to-register preview timeout to 0 seconds
+- what is swiper?
+- set up ripgrep for searching
+-

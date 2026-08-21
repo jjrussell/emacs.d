@@ -408,6 +408,7 @@ With prefix arg, prompts to select which project workspaces to delete."
   (eglot-autoshutdown t)
   (eglot-send-changes-idle-time 0.5)
   (eglot-extend-to-xref t)
+  (eglot-code-action-indications nil)  ; no gutter bolt / minibuffer code-action hints
   (read-process-output-max (* 3 1024 1024))
   :bind (:map eglot-mode-map
               ("M-."     . xref-find-definitions)
@@ -419,6 +420,13 @@ With prefix arg, prompts to select which project workspaces to delete."
   :config
   (add-to-list 'eglot-stay-out-of 'format))
 
+;; Must run at startup (before any Java file is visited) so that
+;; .dir-locals.el overrides of eglot-java-eclipse-jdt-args are accepted
+;; silently.  Putting this in eglot-java's :config is too late because
+;; the package is deferred until the first Java hook fires, which happens
+;; after dir-locals are already evaluated.
+(put 'eglot-java-eclipse-jdt-args 'safe-local-variable #'listp)
+
 (use-package eglot-java
   :ensure t
   :hook ((java-mode    . eglot-java-mode)
@@ -429,6 +437,139 @@ With prefix arg, prompts to select which project workspaces to delete."
   :after (eglot consult)
   :bind (:map eglot-mode-map
               ([remap xref-find-apropos] . consult-eglot-symbols)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Dynamic eglot/jdtls readiness rocket (doom-modeline `lsp' segment)
+;;
+;; eclipse.jdt.ls (via eglot-java) can take a long time to import and
+;; build a project.  Until it is ready, synchronous requests (find
+;; definition/references, and even opening some files) block Emacs.
+;;
+;; doom-modeline's rocket icon normally goes green as soon as eglot
+;; *connects* -- which for jdtls is BEFORE the build finishes -- and is
+;; computed once then cached, so it never reflects the build.
+;;
+;; We drive readiness off eglot's `$/progress' work-done reports
+;; (enabled via the `workDoneProgress' client capability), which jdtls
+;; wraps around its import/build jobs.  This makes the existing rocket
+;; meaningful and live:
+;;   yellow  while jdtls is importing/building/indexing -> may hang
+;;   green   once idle (no active progress)             -> safe
+;;   red     on a server error
+;; No extra text is added -- only the rocket's colour changes.
+;;
+;; NOTE: jdtls also emits a custom `language/status' (type
+;; "ServiceReady") notification, but not every build does, so we do NOT
+;; gate on it -- see `my/eglot--server-busy-p'.  Use
+;; `M-x my/eglot-readiness-report' to inspect the raw state by hand.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar my/eglot--jdt-ready
+  (make-hash-table :test 'eq :weakness 'key)
+  "Per-server flag, non-nil once jdtls has sent a \"ServiceReady\" status.
+Keyed weakly by the eglot server object so dead servers are collected.")
+
+(defun my/eglot--server-busy-p (server)
+  "Non-nil while SERVER has active LSP background work (import/build/index).
+Driven purely by `$/progress' work-done reports, which eglot enables via
+the `workDoneProgress' client capability, so jdtls brackets its import
+and build jobs with them.  We deliberately do NOT gate on jdtls's
+`ServiceReady' status: not every jdtls build emits it, and gating on it
+leaves projects stuck \"busy\" forever.  Transient per-feature requests
+\(eldoc, completion) are ignored so the rocket does not flicker while
+editing."
+  (cl-plusp (hash-table-count (eglot--progress-reporters server))))
+
+(defun my/eglot-readiness-report ()
+  "Echo the raw eglot/jdtls readiness state for the current buffer.
+Use this to confirm by hand whether the LSP is actually still working
+or should be considered ready."
+  (interactive)
+  (let ((server (and (fboundp 'eglot-current-server) (eglot-current-server))))
+    (if (not server)
+        (message "eglot: no server managing this buffer")
+      (let* ((progress (eglot--progress-reporters server))
+             (titles (let (acc)
+                       (maphash (lambda (_k v)
+                                  (push (format "%s" (or (nth 2 v) v)) acc))
+                                progress)
+                       (nreverse acc))))
+        (message
+         (concat
+          "eglot[%s] mode=%s | pending-requests=%d | active-progress=%d%s "
+          "| jdt-ServiceReady=%s | last-error=%s => %s")
+         (eglot-project-nickname server)
+         major-mode
+         (jsonrpc-continuation-count server)
+         (hash-table-count progress)
+         (if titles (format " %S" titles) "")
+         (if (gethash server my/eglot--jdt-ready) "yes" "no/never-sent")
+         (if (jsonrpc-last-error server) "YES" "none")
+         (if (my/eglot--server-busy-p server) "BUSY (working)" "READY"))))))
+
+(with-eval-after-load 'eglot
+  (require 'cl-lib)
+
+  (cl-defmethod eglot-handle-notification
+    (server (_method (eql language/status)) &key type _message
+            &allow-other-keys)
+    "Track eclipse.jdt.ls readiness via its `language/status' notification.
+Refresh the mode line so the rocket colour flips promptly on the
+build->ready transition."
+    (when (stringp type)
+      (cond
+       ((string= type "ServiceReady") (puthash server t my/eglot--jdt-ready))
+       ((string= type "Starting")     (puthash server nil my/eglot--jdt-ready))))
+    (force-mode-line-update t))
+
+  ;; Fresh connection => forget any prior readiness for that server.
+  (add-hook 'eglot-connect-hook
+            (lambda (server) (remhash server my/eglot--jdt-ready))))
+
+;; Redefine doom-modeline's `lsp' segment so the eglot rocket is rebuilt
+;; live at render time with a readiness-based face.  `eval-when-compile'
+;; the require so doom-modeline's `def-segment' *macro* is expanded at
+;; byte-compile time (otherwise it silently compiles to a no-op call).
+(eval-when-compile (require 'doom-modeline nil t))
+(with-eval-after-load 'doom-modeline
+  (defun my/doom-modeline--eglot-live-icon ()
+    "Build doom-modeline's eglot rocket with a live readiness face."
+    (let* ((server (and (eglot-managed-p) (eglot-current-server)))
+           (nick (and server (eglot-project-nickname server)))
+           (last-error (and server (jsonrpc-last-error server)))
+           (busy (and server (my/eglot--server-busy-p server)))
+           (face (cond ((null server) 'doom-modeline-lsp-warning)
+                       (last-error   'doom-modeline-lsp-error)
+                       (busy         'doom-modeline-lsp-warning)
+                       (t            'doom-modeline-lsp-success)))
+           (state (cond ((null server) "connecting")
+                        (last-error   "error")
+                        (busy         "working: importing/building/indexing")
+                        (t            "ready")))
+           (icon (doom-modeline-lsp-icon eglot-menu-string face)))
+      (propertize icon
+                  'help-echo (format "Eglot [%s]: %s
+mouse-1: Display minor mode menu
+mouse-3: LSP server control menu"
+                                     (or nick "") state)
+                  'mouse-face 'doom-modeline-highlight
+                  'local-map (let ((map (make-sparse-keymap)))
+                               (define-key map [mode-line mouse-1] eglot-menu)
+                               (define-key map [mode-line mouse-3] eglot-server-menu)
+                               map))))
+
+  (doom-modeline-def-segment lsp
+    "LSP server state; the eglot rocket reflects jdtls readiness live."
+    (when doom-modeline-lsp
+      (when-let* ((icon (cond ((bound-and-true-p lsp-mode)
+                               doom-modeline--lsp)
+                              ((bound-and-true-p eglot--managed-mode)
+                               (my/doom-modeline--eglot-live-icon))
+                              ((bound-and-true-p citre-mode)
+                               doom-modeline--tags)))
+                  (sep (doom-modeline-spc)))
+        (concat sep (doom-modeline-display-icon icon) sep)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

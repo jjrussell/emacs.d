@@ -1,0 +1,456 @@
+#+TITLE: HubSpot config
+#+SUBTITLE: KY39WG72W3
+#+DESCRIPTION: An org-babel based emacs configuration for my HubSpot machine
+#+LANGUAGE: en
+#+STARTUP: contents noindent
+#+OPTIONS: toc:t
+
+* this file
+#+begin_src emacs-lisp
+  (set-register ?L `(file . "~/.emacs.d/profiles/KY39WG72W3.org"))
+#+end_src
+* lockfiles
+hubspot tools aren't smart enough to ignore these
+#+begin_src emacs-lisp
+  (setq create-lockfiles nil)
+#+end_src
+
+* Git wrapper
+#+begin_src emacs-lisp
+  (setq magit-git-executable "/Users/evdavis/.dotfiles/bin/magit-git-wrapper")
+#+end_src
+
+* Magit worktrees
+*** magit-worktree
+Suggest =~/src/wt/<repo>/<branch>= as the default location when creating a new
+worktree via magit's native commands (=magit-worktree-checkout=,
+=magit-worktree-branch=).  Matches the layout used by =my/dispatch-task=.
+#+begin_src emacs-lisp
+  (defun my/magit-read-worktree-directory (prompt branch)
+    "Read a directory for a new worktree under ~/src/wt/<repo>/<branch>.
+  Suitable for `magit-read-worktree-directory-function'.  BRANCH is nil
+  when no branch is being checked out; in that case no initial input is
+  offered.  Slashes in branch names are replaced with dashes to match
+  magit's built-in readers."
+    (let* ((repo (file-name-nondirectory
+                  (directory-file-name default-directory)))
+           (base (file-name-as-directory
+                  (expand-file-name repo my/worktree-root))))
+      (read-directory-name
+       prompt base nil nil
+       (and branch (string-replace "/" "-" branch)))))
+
+  (setq magit-read-worktree-directory-function
+        #'my/magit-read-worktree-directory)
+#+end_src
+
+*** forge-worktree
+Forge uses its own customization point with a different signature: the function
+takes the pullreq as its only argument and must return a directory path.  We
+mirror =my/magit-read-worktree-directory= so =forge-checkout-worktree= drops
+new worktrees under =~/src/wt/<repo>/<branch>= too.
+#+begin_src emacs-lisp
+  (with-eval-after-load 'forge
+    (defun my/forge-checkout-worktree-read-directory (pullreq)
+      "Suggest ~/src/wt/<repo>/<branch> for `forge-checkout-worktree'.
+  Signature matches `forge-checkout-worktree-read-directory-function':
+  takes PULLREQ and returns a directory path."
+      (pcase-let* (((eieio number head-ref) pullreq)
+                   (repo (file-name-nondirectory
+                          (directory-file-name default-directory)))
+                   (base (file-name-as-directory
+                          (expand-file-name repo my/worktree-root)))
+                   (branch (forge--pullreq-branch-internal pullreq))
+                   (initial (if (string-match-p "\\`pr-[0-9]+\\'" branch)
+                                (number-to-string number)
+                              (string-replace "/" "-" head-ref)))
+                   (path (read-directory-name
+                          (format "Checkout #%s in new worktree: " number)
+                          base nil nil initial)))
+        (when (equal path "")
+          (user-error "The empty string isn't a valid path"))
+        path))
+
+    (setq forge-checkout-worktree-read-directory-function
+          #'my/forge-checkout-worktree-read-directory))
+#+end_src
+
+*** perspective integration
+When magit or forge creates a worktree, they finish by visiting the new
+directory, which projectile recognizes as a new project -- but nothing creates
+a matching perspective.  Mirror =projectile-persp-bridge= so the new worktree
+lands in its own perspective, the way =projectile-persp-switch-project= would.
+=forge-checkout-worktree= calls =magit-worktree-checkout= internally, so
+advising the magit commands covers the forge flow too.
+#+begin_src emacs-lisp
+  (defun my/worktree-persp-switch (&rest _)
+    "Create or switch to a perspective matching the current projectile project."
+    (when (and (bound-and-true-p persp-mode)
+               (projectile-project-p))
+      (persp-switch (projectile-project-name))))
+
+  (with-eval-after-load 'magit
+    (advice-add 'magit-worktree-checkout :after #'my/worktree-persp-switch)
+    (advice-add 'magit-worktree-branch   :after #'my/worktree-persp-switch))
+#+end_src
+
+* projects
+** bend
+#+begin_src emacs-lisp
+  (use-package bend
+    :demand t
+    :load-path "~/Projects/bend.el"
+    :bind (:map projectile-command-map
+                ("c b" . bend-serve))
+    :hook
+    (projectile-after-switch-project . bend-setup)
+    (typescript-ts-mode . my/eglot-typescript-setup)
+    (tsx-ts-mode . my/eglot-typescript-setup)
+    (json-ts-mode . my/eglot-typescript-setup)
+    :config
+    (defvar my/bend-ts-server-command nil
+      "Cached eglot server command for TypeScript using HubSpot tsserver.")
+
+    (defun my/eglot-typescript-setup ()
+      "Configure TypeScript path for Eglot."
+      (let ((server-command
+             (or my/bend-ts-server-command
+                 (when (ignore-errors
+                         (unless (and bend--process (process-live-p bend--process))
+                           (bend-setup))
+                         t)
+                   (when-let* ((ts-path (ignore-errors (bend--get-typescript-path)))
+                               (tsserver (expand-file-name "lib/tsserver.js" ts-path)))
+                     (setq my/bend-ts-server-command
+                           `("typescript-language-server" "--stdio"
+                             :initializationOptions (:tsserver (:path ,tsserver)))))
+                   my/bend-ts-server-command)
+                 '("typescript-language-server" "--stdio"))))
+        (setq-local eglot-server-programs
+                    (cons `((tsx-ts-mode typescript-ts-mode js-ts-mode)
+                            . ,server-command)
+                          eglot-server-programs))
+        (eglot-ensure))))
+#+end_src
+** bend-flymake
+#+begin_src emacs-lisp
+  (use-package bend-flymake
+    :ensure nil
+    :after bend
+    :hook
+    (typescript-ts-mode . bend-flymake-mode)
+    (tsx-ts-mode . bend-flymake-mode)
+    (js-ts-mode . bend-flymake-mode))
+#+end_src
+
+* AI integrations
+** agent-shell
+#+begin_src emacs-lisp
+  (use-package agent-shell
+    :demand t
+    :bind
+    ("C-c C-<SPC>" . agent-shell-help-menu)
+    (:map projectile-command-map
+          ("<SPC>" . my/agent-shell-dwim)
+          ("@" . agent-shell-send-current-file))
+
+    (:map agent-shell-mode-map
+          ("RET" . newline)
+          ("C-c C-c" . shell-maker-submit)
+          ("C-c C-k" . agent-shell-interrupt)
+          ("C-x n" . agent-shell-prompt-compose))
+
+    :custom
+    (visual-fill-column-width 120 "wrap Claude without impacting too many other things")
+    (agent-shell-confirm-interrupt nil "I do not need to confirm the command I just sent!")
+    (agent-shell-google-authentication (agent-shell-google-make-authentication :login t))
+    (agent-shell-openai-authentication
+     (agent-shell-openai-make-authentication
+      :codex-api-key (lambda ()
+                       (string-trim
+                        (shell-command-to-string "hsauthctl idp get-token")))))
+    (agent-shell-context-sources '(files region error))
+    (agent-shell-anthropic-default-model-id "claude-opus-4-6[1m]")
+    (agent-shell-agent-configs
+     (list (agent-shell-anthropic-make-claude-code-config)
+           (agent-shell-openai-make-codex-config)
+           (agent-shell-google-make-gemini-config)))
+    (agent-shell-mcp-servers '(((name . "linear")
+                                (type . "http")
+                                (headers . [])
+                                (url . "https://mcp.linear.app/mcp"))))
+    :ensure-system-package
+    ((claude-agent-acp . "npm install -g @zed-industries/claude-agent-acp")
+     (codex-acp . "npm install -g @zed-industries/codex-acp"))
+    :hook
+    (agent-shell-mode . my/agent-shell-bind-to-project-persp)
+
+    :config
+    (defun my/agent-shell-dwim (&optional arg)
+      "Smart agent-shell dispatcher.
+
+     With prefix ARG, delegate to `agent-shell' with the prefix.
+     If in an agent-shell buffer, switch to the previous buffer without closing the window.
+     If the project's agent shell is visible but not focused, focus it.
+     If the project's agent shell exists but is not visible, toggle it.
+     Otherwise start a new shell with `agent-shell'."
+      (interactive "P")
+      (let* ((shell-buffers (agent-shell-project-buffers))
+             (visible-window (cl-some (lambda (buf) (get-buffer-window buf)) shell-buffers)))
+        (cond
+         (arg
+          (agent-shell arg))
+         ((derived-mode-p 'agent-shell-mode)
+          (switch-to-prev-buffer))
+         (visible-window
+          (select-window visible-window))
+         (shell-buffers
+          (agent-shell-toggle))
+         (t
+          (agent-shell)))))
+
+    (defvar my/persp-allow-agent-shell nil
+      "Let-bound to t when explicitly adding an agent-shell to a perspective.
+     Bypasses `my/persp-skip-agent-shell'.")
+
+    (defun my/persp-skip-agent-shell (orig-fun buffer-or-name)
+      "Advice: skip auto-adding `agent-shell-mode' buffers to perspectives.
+     Bypassed when `my/persp-allow-agent-shell' is non-nil."
+      (let ((buffer (get-buffer buffer-or-name)))
+        (unless (and buffer
+                     (not my/persp-allow-agent-shell)
+                     (with-current-buffer buffer
+                       (derived-mode-p 'agent-shell-mode)))
+          (funcall orig-fun buffer-or-name))))
+    (with-eval-after-load 'perspective
+      (advice-add 'persp-add-buffer :around #'my/persp-skip-agent-shell))
+
+    (defun my/agent-shell-bind-to-project-persp ()
+      "On spawn, add the new agent-shell to its project's perspective if present."
+      (when (and (bound-and-true-p persp-mode)
+                 (fboundp 'projectile-project-name))
+        (let ((name (ignore-errors (projectile-project-name))))
+          (when (and name (member name (persp-names)))
+            (let ((my/persp-allow-agent-shell t))
+              (with-perspective name
+                (persp-add-buffer (current-buffer))))))))
+    (defun my/agent-shell-focus-input (_frame)
+      "Focus the latest permission button or input area in agent-shell buffers."
+      (when (derived-mode-p 'agent-shell-mode)
+        (or (agent-shell-jump-to-latest-permission-button-row)
+            (goto-char (point-max)))))
+
+    (add-hook 'window-selection-change-functions #'my/agent-shell-focus-input))
+#+end_src
+
+*** persp eviction
+Clean up agent-shell buffers that were associated with perspectives before
+=my/persp-skip-agent-shell= was installed.
+#+begin_src emacs-lisp
+  (defun my/persp-evict-agent-shells ()
+    "Remove all `agent-shell-mode' buffers from every perspective."
+    (interactive)
+    (dolist (buf (buffer-list))
+      (when (with-current-buffer buf (derived-mode-p 'agent-shell-mode))
+        (cl-loop for p being the hash-values of (perspectives-hash)
+                 do (with-perspective (persp-name p)
+                      (persp-forget-buffer buf))))))
+#+end_src
+
+*** agent-shell-manager
+#+begin_src emacs-lisp
+  (use-package agent-shell-manager
+    :vc (:url "https://github.com/jethrokuan/agent-shell-manager" :rev :newest)
+    :after agent-shell
+    :bind
+    ("C-c <SPC>" . agent-shell-manager-toggle)
+    (:map agent-shell-mode-map
+          ("C-c <SPC>" . agent-shell-manager-toggle))
+    (:map agent-shell-manager-mode-map
+          ("C-g" . quit-window))
+
+    :custom
+    (agent-shell-manager-side 'bottom)
+    (agent-shell-manager-transient t))
+#+end_src
+
+*** agent-shell dashboard
+Tile all agent-shell buffers in a grid. Useful for monitoring multiple
+concurrent agents.
+#+begin_src emacs-lisp
+  (defun my/tile-agent-shells ()
+    "Tile all agent-shell buffers in a grid in the current frame."
+    (interactive)
+    (let ((bufs (seq-filter
+                 (lambda (b)
+                   (eq (buffer-local-value 'major-mode b) 'agent-shell-mode))
+                 (buffer-list))))
+      (when (null bufs)
+        (user-error "No agent-shell buffers found"))
+      (delete-other-windows)
+      (let* ((n (length bufs))
+             (cols (ceiling (sqrt n)))
+             (rows (ceiling (/ (float n) cols))))
+        (dotimes (_ (1- rows))
+          (split-window-below))
+        (balance-windows)
+        (let ((row-wins (window-list nil 'no-mini)))
+          (dolist (w row-wins)
+            (select-window w)
+            (dotimes (_ (1- cols))
+              (split-window-right))))
+        (balance-windows)
+        (let ((all-wins (window-list nil 'no-mini)))
+          (cl-loop for buf in bufs
+                   for win in all-wins
+                   do (set-window-buffer win buf))
+          (cl-loop for win in (nthcdr n all-wins)
+                   do (delete-window win))))))
+
+  (defun my/agent-shell-perspective ()
+    "Switch to (or create) an 'agents' perspective with tiled agent-shell buffers."
+    (interactive)
+    (persp-switch "agents")
+    (my/tile-agent-shells))
+
+  (bind-key "C-c M-<SPC>" #'my/agent-shell-perspective)
+#+end_src
+
+*** agent-shell-macext
+#+begin_src emacs-lisp
+  (use-package agent-shell-macext
+    :vc (:url "https://github.com/cxa/agent-shell-macext" :rev :newest)
+    :hook (agent-shell-mode . agent-shell-macext-setup)
+    :custom
+    (agent-shell-macext-file-copy-policy 'always-original)    ; auto, always-copy, always-original
+    (agent-shell-macext-notifications t)           ; enable native notifications
+    (agent-shell-macext-notify-current-buffer nil)) ; nil = suppress when shell/viewport is current and Emacs is focused
+#+end_src
+
+*** dispatch-task
+Pick an existing worktree or create a new one, then start an
+agent-shell there. Worktrees live under =~/src/wt/<repo>/=.
+#+begin_src emacs-lisp
+  (defvar my/worktree-root "~/src/wt/"
+    "Root directory for centralized worktrees.")
+
+  (defun my/worktree-repo-name ()
+    "Return the basename of the current repo's toplevel directory."
+    (when-let ((root (magit-toplevel)))
+      (file-name-nondirectory (directory-file-name root))))
+
+  (defun my/worktree-list-external ()
+    "Return alist of (PATH . BRANCH) for worktrees under `my/worktree-root' for the current repo."
+    (when-let ((repo (my/worktree-repo-name)))
+      (let ((prefix (expand-file-name (file-name-concat my/worktree-root repo))))
+        (seq-filter
+         (lambda (entry)
+           (string-prefix-p prefix (car entry)))
+         (mapcar (lambda (wt)
+                   (let* ((path (car wt))
+                          (branch (nth 2 wt)))
+                     (cons path (or branch "(detached)"))))
+                 (magit-list-worktrees))))))
+
+  (defun my/dispatch-task ()
+    "Pick or create a worktree, then start an agent-shell in it."
+    (interactive)
+    (unless (magit-toplevel)
+      (user-error "Not in a git repository"))
+    (let* ((repo (my/worktree-repo-name))
+           (existing (my/worktree-list-external))
+           (new-label "[new worktree]")
+           (choices (cons
+                     (cons new-label nil)
+                     (mapcar (lambda (entry)
+                               (let ((dir (file-name-nondirectory
+                                           (directory-file-name (car entry))))
+                                     (branch (cdr entry)))
+                                 (cons (format "%s (%s)" dir branch)
+                                       (car entry))))
+                             existing)))
+           (choice (completing-read "Worktree: " choices nil t))
+           (worktree-path
+            (or (alist-get choice choices nil nil #'string=)
+                (let* ((branch (read-string "Branch name: "))
+                       (path (expand-file-name
+                              (file-name-concat my/worktree-root repo branch))))
+                  (make-directory (file-name-directory path) t)
+                  (magit-worktree-branch path branch "HEAD")
+                  (unless (file-exists-p path)
+                    (user-error "Failed to create worktree at %s" path))
+                  path))))
+      (persp-switch (file-name-nondirectory (directory-file-name worktree-path)))
+      (agent-shell--new-shell :location worktree-path)))
+#+end_src
+
+** copilot
+#+begin_src emacs-lisp
+  (use-package copilot
+    :config
+    (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2))
+    (add-to-list 'copilot-indentation-alist '(lisp-mode 2))
+    (add-to-list 'copilot-indentation-alist '(dotenv-mode 2))
+    (add-to-list 'copilot-indentation-alist '(gfm-mode 2))
+    :custom
+    (copilot-max-char-warning-disable t "I don't care if copilot doesn't work in index.d.ts files")
+    :bind (:map copilot-completion-map
+                ("<tab>" . copilot-accept-completion)
+                ("TAB" . copilot-accept-completion)
+                ("C-<tab>" . copilot-accept-completion-by-word)
+                ("C-TAB" . copilot-accept-completion-by-word)
+                ("M-n" . copilot-next-completion)
+                ("M-p" . copilot-previous-completion))
+    :hook (prog-mode . copilot-mode))
+#+end_src
+
+** inheritenv
+dependency used by claude-code.el
+#+begin_src emacs-lisp
+  (use-package inheritenv)
+#+end_src
+
+** run-command
+#+begin_src emacs-lisp
+  (defun my/run-command-recipe-hs-project ()
+    "Provide `hs project' commands when inside a HubSpot project."
+    (when-let* ((root (locate-dominating-file default-directory "hsproject.json")))
+      (let ((commands (list
+                       (list :command-name "hs-project-dev"
+                             :command-line "hs project dev"
+                             :display "hs project dev"
+                             :working-dir root)
+                       (list :command-name "hs-project-upload"
+                             :command-line "hs project upload"
+                             :display "hs project upload"
+                             :working-dir root))))
+        (when (file-exists-p (expand-file-name "package.json" default-directory))
+          (push (list :command-name "npm-link-ui-extensions"
+                      :command-line "npm link @hubspot/ui-extensions"
+                      :display "npm link @hubspot/ui-extensions"
+                      :working-dir default-directory)
+                commands))
+        commands)))
+
+  (use-package run-command
+    :after projectile
+    :bind (:map projectile-command-map
+                ("x c" . run-command))
+    :config
+    (advice-add 'run-command-core-run :around
+                (lambda (orig-fn &rest args)
+                  (let ((display-buffer-alist
+                         (cons '(run-command-buffer-p (display-buffer-pop-up-window))
+                               display-buffer-alist)))
+                    (apply orig-fn args))))
+    (defun my/eat-char-mode-for-run-command ()
+      "Start eat in char-mode for run-command buffers."
+      (when (bound-and-true-p run-command-command-name)
+        (eat-char-mode)))
+    :hook (eat-mode . my/eat-char-mode-for-run-command)
+    :custom
+    (run-command-default-runner 'run-command-runner-eat)
+    (run-command-selector 'run-command-selector-ivy)
+    (run-command-recipes '(run-command-recipe-package-json my/run-command-recipe-hs-project))
+    :init (require 'run-command-recipe-package-json))
+#+end_src
