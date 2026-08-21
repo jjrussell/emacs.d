@@ -165,9 +165,9 @@
 		  lsp-intellij lsp-java lsp-mode lsp-pyright lsp-treemacs lsp-ui lua-mode magit
 		  marginalia markdown-mode markdown-toc mixed-pitch mmm-mode multiple-cursors
 		  nerd-icons-completion nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer olivetti
-		  orderless org-modern osx-plist pager peg persp-projectile pig-mode pig-snippets
-		  pos-tip prettier-js project projectile projectile-rails protobuf-mode python
-		  python-mode rainbow-delimiters rbenv real-auto-save rg rspec-mode ruby-end
+		  orderless org org-modern osx-plist pager peg persp-projectile pig-mode
+		  pig-snippets pos-tip prettier-js project projectile projectile-rails protobuf-mode
+		  python python-mode rainbow-delimiters rbenv real-auto-save rg rspec-mode ruby-end
 		  ruby-interpolation ruby-tools rvm scss-mode smart-tab smartparens smex sql-indent
 		  string-inflection tern toggle-quotes track-changes tramp transpose-frame treemacs
 		  treemacs-magit treemacs-nerd-icons treemacs-projectile treesit-auto undo-tree
