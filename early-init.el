@@ -7,6 +7,11 @@
 ;; Try again later.
 ;;; Code:
 (defvar my-emacs-start-time (current-time))
+;; Prefer a newer .el over a stale .elc: if a source file is newer than its
+;; compiled file, load the source. Set here (before any package loads) so it
+;; applies to the whole session. Guards against editing a file and forgetting
+;; to recompile -- the old .elc would otherwise be loaded silently.
+(setq load-prefer-newer t)
 (setq byte-compile-warnings nil)
 (setq native-comp-async-report-warnings-errors nil)
 (setq warning-minimum-level :error)

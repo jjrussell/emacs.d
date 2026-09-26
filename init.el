@@ -202,11 +202,13 @@
 (global-set-key (kbd "C-S-k")
                 (lambda ()
 		  (interactive)
-		  (kill-this-buffer nil)))
+		  (kill-current-buffer)))
 (global-set-key (kbd "C-c q") 'auto-fill-mode) ; toggle auto-fill-mode
 (global-set-key (kbd "M-`") 'other-window)
 
-;; M-0 through M-9 are handled by winum (jump to window by number, M-0 = minibuffer)
+;; M-1 through M-9 select projectile-session tab-bar tabs (M-9 = last, M-0 = most
+;; recent); see the tab-bar block in init/my-tools.el
+
 ;; vscode/sublime keybinding and behavior for join lines
 (global-set-key (kbd "C-j") (lambda () (interactive) (join-line t)))
 (global-set-key [3 9] (lambda () (interactive) (insert-tab))) ; Control-C TAB as a vector

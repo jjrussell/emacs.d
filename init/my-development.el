@@ -157,7 +157,9 @@
 
 (use-package yasnippet :config (yas-global-mode))
 (use-package yasnippet-snippets :ensure t)
-(use-package flycheck :ensure t :init (global-flycheck-mode))
+;; Diagnostics: flymake only (built-in). Eglot feeds flymake natively for all
+;; LSP buffers (java/python/js/ts); non-LSP modes enable flymake-mode via their
+;; hooks below. Flycheck was removed — it was redundant with eglot→flymake.
 (when nil  ; ─── DISABLED: lsp-mode (replaced by eglot below) ───────────────
 
 (use-package lsp-treemacs
@@ -427,10 +429,43 @@ With prefix arg, prompts to select which project workspaces to delete."
 ;; after dir-locals are already evaluated.
 (put 'eglot-java-eclipse-jdt-args 'safe-local-variable #'listp)
 
-(use-package eglot-java
-  :ensure t
-  :hook ((java-mode    . eglot-java-mode)
-         (java-ts-mode . eglot-java-mode)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Java LSP backend: eglot-java (eclipse.jdt.ls) or Cirque
+;;
+;; Choose ONE backend here, then restart Emacs.  This is a deliberate
+;; config-time switch (no live toggling) so that when Cirque is selected it
+;; runs EXACTLY as HubSpot's docs recommend -- nothing unusual in the startup
+;; to muddy a bug report.  See:
+;;   https://github.com/HubSpotEngineering/Cirque/blob/master/docs/emacs_setup.md
+;;
+;;   `eglot-java'  eclipse.jdt.ls via the eglot-java package (the default,
+;;                 long-standing setup).
+;;   `cirque'      HubSpot's Cirque server, installed by `bpx cirque-lsp-emacs'
+;;                 to ~/.hubspot/.cirque/emacs/.  Activates only inside a Mill
+;;                 workspace (a dir containing build.mill.yaml).
+;;
+;; The two cannot coexist: both attach an eglot server to java-mode buffers, so
+;; selecting `cirque' skips loading eglot-java entirely (the docs' "disable the
+;; built-in Java LSP" step).
+;;
+;; To switch: change `my/java-lsp-backend' below and restart Emacs.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar my/java-lsp-backend 'cirque
+  "Java LSP backend to load at startup: `eglot-java' or `cirque'.
+Change this and restart Emacs.")
+
+(pcase my/java-lsp-backend
+  ('cirque
+   ;; The single line from Cirque's docs/emacs_setup.md, verbatim.  It puts
+   ;; Cirque on `load-path' and registers its own java-mode hooks.
+   (load "~/.hubspot/.cirque/emacs/cirque-autoloads" t))
+  (_
+   (use-package eglot-java
+     :ensure t
+     :hook ((java-mode    . eglot-java-mode)
+            (java-ts-mode . eglot-java-mode)))))
 
 (use-package consult-eglot
   :ensure t
@@ -750,6 +785,9 @@ Dependent gems:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun my-sh-mode-hook ()
   (setq indent-tabs-mode nil)
+  ;; Non-LSP shell linting via flymake (needs shellcheck on PATH + the
+  ;; flymake-shellcheck backend; harmless no-op if neither is present).
+  (flymake-mode 1)
   (cond ((equal (point-max) 1)
          (create-boilerplate))))
 
@@ -773,6 +811,9 @@ Dependent gems:
   "Personal hook for emacs-lisp"
   (define-key emacs-lisp-mode-map [(control c) (d)] 'my-emacs-lisp-doc-defun)
   (define-key emacs-lisp-mode-map [(control m) ] 'newline-and-indent)
+  ;; Non-LSP elisp checking via flymake's built-in byte-compile + checkdoc
+  ;; backends (replaces what global-flycheck-mode used to provide here).
+  (flymake-mode 1)
   )
 (add-hook 'emacs-lisp-mode-hook 'my-emacs-lisp-mode-hook)
 

@@ -32,7 +32,10 @@
 
          ;; 2019-04-23 trying not compiling init.el so customization takes effect without recompiling
          ;; is it that much slower?
-	 (byte-recompile-file user-init-file nil 0 t)
+	 ;; recompile init.el (arg 0 = compile even if no .elc yet), then load it.
+	 ;; `byte-recompile-file's old LOAD 4th arg is advertised-obsolete.
+	 (byte-recompile-file user-init-file nil 0)
+	 (load-file user-init-file)
          (my-after-init-hook)
          ) "Reload emacs config" :column "Quick Open")
   ("e" (lambda () (interactive) (find-file user-init-file)) "init.el")
@@ -393,21 +396,13 @@ toggles and would race with this setup)."
   :ensure t
   :after (treemacs magit))
 
-;; winum: M-1 through M-9 to jump to numbered windows (replaces window-numbering)
+;; winum: numbers each window (shown in the mode-line). The M-1..M-9
+;; window-selection bindings were removed so those keys are free for
+;; tab-bar tab switching (see the tab-bar block below).
 (use-package winum
   :ensure t
   :custom
   (winum-auto-assign-0-to-minibuffer t)
-  :bind (("M-0" . winum-select-window-0-or-10)
-         ("M-1" . winum-select-window-1)
-         ("M-2" . winum-select-window-2)
-         ("M-3" . winum-select-window-3)
-         ("M-4" . winum-select-window-4)
-         ("M-5" . winum-select-window-5)
-         ("M-6" . winum-select-window-6)
-         ("M-7" . winum-select-window-7)
-         ("M-8" . winum-select-window-8)
-         ("M-9" . winum-select-window-9))
   :config
   (winum-mode))
 
@@ -515,8 +510,6 @@ toggles and would race with this setup)."
 
 (electric-pair-mode)
 
-(use-package embrace
-  :bind ("C-," . embrace-commander))
 
 
 
@@ -608,7 +601,9 @@ toggles and would race with this setup)."
          ([remap Info-search]               . consult-info)
          ;; additional bindings
          ("C-x B"   . consult-buffer-other-window)
-         ("<C-tab>" . consult-buffer)
+         ;; <C-tab> intentionally left unbound here so tab-bar's built-in
+         ;; `tab-next' works (browser-style next-tab). consult-buffer is still
+         ;; on C-x b (remap of switch-to-buffer) and C-c h below.
          ("C-c h"   . consult-buffer)
          ;; navigation (M-g prefix)
          ("M-g e"   . consult-compile-error)
@@ -636,7 +631,8 @@ toggles and would race with this setup)."
   :custom
   (consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=1000 --path-separator / --smart-case --no-heading --with-filename --line-number --search-zip"))
 
-;; C-x C-b now handled by perspective's persp-ibuffer binding above
+;; C-x C-b: global ibuffer (previously perspective's persp-ibuffer)
+(global-set-key (kbd "C-x C-b") #'ibuffer)
 
 ;; which-key: after pressing a prefix key, shows available continuations
 ;; Activates on a timer (default 1 second) -- just pause after a prefix like C-x or C-c
@@ -685,11 +681,34 @@ toggles and would race with this setup)."
   (projectile-switch-project-action 'projectile-dired)
   (projectile-tags-backend 'find-tag)
   ;; You have a very extensive list of root files, this keeps it neat
-  (projectile-project-root-files-bottom-up '(".prj" ".claude" ".git" ".hg" ".fslckout" "_FOSSIL_" ".bzr" "_darcs"))
+  (projectile-project-root-files-bottom-up '(".prj" ".claude" ".omo" ".git" ".hg" ".fslckout" "_FOSSIL_" ".bzr" "_darcs"))
   (projectile-project-root-files
    '("rebar.config" "project.clj" "pom.xml" "build.sbt" "build.gradle" "Gemfile" "requirements.txt"
      "package.json" "gulpfile.js" "Gruntfile.js" "bower.json" "composer.json" "Cargo.toml" "mix.exs"
-     "Rakefile")))
+     "Rakefile"))
+  ;; projectile-session-mode: each project gets its own tab-bar tab with a
+  ;; restorable, disk-backed window/buffer session (replaces perspective).
+  (projectile-session-directory "~/.emacs.local/projectile-sessions/")
+  ;; When first entering a project (fresh tab, no saved session), land in
+  ;; dired -- matching the old `projectile-switch-project-action'.
+  (projectile-session-default-action 'projectile-dired)
+   (projectile-session-restore-on-switch t)
+   (projectile-session-autosave t)
+   :config
+   (projectile-session-mode +1))
+
+;; Browser-style navigation for the projectile-session tabs.
+;; Ctrl-TAB / Ctrl-Shift-TAB (next / previous tab) are built into tab-bar and
+;; already active. For "jump to tab N": M-1..M-8 select that tab, M-9 the last
+;; tab, M-0 the most recently visited (Cmd is Meta on this Mac). These keys were
+;; freed up by removing the winum window-selection bindings above. Numeric prefix
+;; args are still available on C-1..C-9. `tab-bar-tab-hints' shows the numbers in
+;; the bar so you can see what to press.
+(use-package tab-bar
+  :ensure nil
+  :custom
+  (tab-bar-select-tab-modifiers '(meta))
+  (tab-bar-tab-hints t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -726,10 +745,10 @@ at point."
             ;; deal with. Not sure what.
             (xref-find-definitions tag-name)
           (user-error
-           (set 'use-imenu t)
+           (setq use-imenu t)
            )
           )
-      (set 'use-imenu t)
+      (setq use-imenu t)
       )
 
 
@@ -809,7 +828,10 @@ at point."
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this-dwim)
 
 ;; expand region on each successive use of this.
-(global-set-key (kbd "C-.") 'er/expand-region)
+;;(global-set-key (kbd "C-.") 'er/expand-region)
+(global-set-key (kbd "C-.") 'expreg-expand)
+(global-set-key (kbd "C-,") 'expreg-contract)
+
 
 
 ;; better duplicate buffer name handling
@@ -867,23 +889,10 @@ at point."
 			      writeroom-set-internal-border-width))
   (writeroom-disable-fringe t))
 
-;; perspective: workspaces that scope buffers per project
-(use-package perspective
-  :ensure t
-  :bind (("C-x C-b" . persp-ibuffer)
-         ("C-x k" . persp-kill-buffer*))
-  :custom
-  (persp-mode-prefix-key (kbd "C-c M-p"))
-  (persp-modestring-short t)
-  (persp-sort 'created)
-  (persp-state-default-file (expand-file-name "perspectives" user-emacs-directory))
-  :init
-  (persp-mode))
-
-(use-package persp-projectile
-  :ensure t
-  :after (perspective projectile)
-  :bind ([remap projectile-switch-project] . projectile-persp-switch-project))
+;; Project workspaces are now handled by `projectile-session-mode' (enabled in
+;; the projectile use-package block above): each project gets its own tab-bar
+;; tab with a restorable, disk-backed session. This replaces the previous
+;; perspective + persp-projectile setup.
 
 ;; Takes over these keys to let you type them fast in succesion to perform commands.
 ;; Using common keys can result in a slight delay on the lead key but mostly I've never noticed this
@@ -1040,9 +1049,6 @@ at point."
                               (headers . [])
                               (url . "https://mcp.linear.app/mcp"))))
 
-  :hook
-  (agent-shell-mode . my/agent-shell-bind-to-project-persp)
-
   :config
   (defun my/agent-shell-dwim (&optional arg)
     "Smart agent-shell dispatcher.
@@ -1066,31 +1072,6 @@ at point."
         (agent-shell-toggle))
        (t
         (agent-shell)))))
-
-  (defvar my/persp-allow-agent-shell nil
-    "Let-bound to t when explicitly adding an agent-shell to a perspective.")
-
-  (defun my/persp-skip-agent-shell (orig-fun buffer-or-name)
-    "Advice: skip auto-adding `agent-shell-mode' buffers to perspectives.
-   Bypassed when `my/persp-allow-agent-shell' is non-nil."
-    (let ((buffer (get-buffer buffer-or-name)))
-      (unless (and buffer
-                   (not my/persp-allow-agent-shell)
-                   (with-current-buffer buffer
-                     (derived-mode-p 'agent-shell-mode)))
-        (funcall orig-fun buffer-or-name))))
-  (with-eval-after-load 'perspective
-    (advice-add 'persp-add-buffer :around #'my/persp-skip-agent-shell))
-
-  (defun my/agent-shell-bind-to-project-persp ()
-    "On spawn, add the new agent-shell to its project's perspective if present."
-    (when (and (bound-and-true-p persp-mode)
-               (fboundp 'projectile-project-name))
-      (let ((name (ignore-errors (projectile-project-name))))
-        (when (and name (member name (persp-names)))
-          (let ((my/persp-allow-agent-shell t))
-            (with-perspective name
-              (persp-add-buffer (current-buffer))))))))
 
   (defun my/agent-shell-focus-input (_frame)
     "Focus the latest permission button or input area in agent-shell buffers."
@@ -1169,16 +1150,6 @@ visible."
   (keymap-set agent-shell-mode-map "C-c h" #'my/agent-shell-toggle-tool-calls))
 
 
-;; Clean up agent-shell buffers from perspectives
-(defun my/persp-evict-agent-shells ()
-  "Remove all `agent-shell-mode' buffers from every perspective."
-  (interactive)
-  (dolist (buf (buffer-list))
-    (when (with-current-buffer buf (derived-mode-p 'agent-shell-mode))
-      (cl-loop for p being the hash-values of (perspectives-hash)
-               do (with-perspective (persp-name p)
-                    (persp-forget-buffer buf))))))
-
 ;; agent-shell-manager: sidebar to list and switch between agent shells
 (use-package agent-shell-manager
   :vc (:url "https://github.com/jethrokuan/agent-shell-manager" :rev :newest)
@@ -1223,13 +1194,21 @@ visible."
         (cl-loop for win in (nthcdr n all-wins)
                  do (delete-window win))))))
 
-(defun my/agent-shell-perspective ()
-  "Switch to (or create) an 'agents' perspective with tiled agent-shell buffers."
+(defun my/switch-or-create-tab (name)
+  "Select the tab-bar tab named NAME, creating it if it doesn't exist."
+  (let ((names (mapcar (lambda (tab) (alist-get 'name tab)) (tab-bar-tabs))))
+    (if (member name names)
+        (tab-bar-select-tab-by-name name)
+      (tab-bar-new-tab)
+      (tab-bar-rename-tab name))))
+
+(defun my/agent-shell-tab ()
+  "Switch to (or create) an agents tab with tiled agent-shell buffers."
   (interactive)
-  (persp-switch "agents")
+  (my/switch-or-create-tab "agents")
   (my/tile-agent-shells))
 
-(bind-key "C-c M-a" #'my/agent-shell-perspective)
+(bind-key "C-c M-a" #'my/agent-shell-tab)
 
 ;; agent-shell-macext: macOS-native notifications and file handling
 (use-package agent-shell-macext
@@ -1287,7 +1266,7 @@ visible."
                 (unless (file-exists-p path)
                   (user-error "Failed to create worktree at %s" path))
                 path))))
-    (persp-switch (file-name-nondirectory (directory-file-name worktree-path)))
+    (my/switch-or-create-tab (file-name-nondirectory (directory-file-name worktree-path)))
     (agent-shell--new-shell :location worktree-path)))
 
 (provide 'my-tools)

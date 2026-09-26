@@ -38,3 +38,5 @@ forge-database.sqlite
 agent/
 perspectives
 eglot-java-eclipse-jdt-cache
+projectile-frecency.eld
+ai-code-backends-history.el

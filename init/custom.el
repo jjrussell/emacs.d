@@ -11,10 +11,11 @@
  ;; If there is more than one, they won't work right.
  '(CUA-mode-inhibit-delay 30000)
  '(CUA-mode-remap-cx-shift-only t)
- '(abbrev-mode t t)
+ '(abbrev-mode t)
  '(ag-arguments
    '("--context" "--ignore-dir=log" "--ignore-dir=vendor" "--all-text" "--smart-case" "--nogroup"
      "--column" "--"))
+ '(ai-code-onboarding-seen t)
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
  '(auto-indent-blank-lines-on-move nil)
@@ -98,7 +99,6 @@
    '(("\\.elc\\'" emacs-mule . emacs-mule) ("\\(\\`\\|/\\)loaddefs.el\\'" raw-text . raw-text-unix)
      ("\\.reg\\'" utf-16-le . utf-16-le) ("\\.tar\\'" no-conversion . no-conversion) ("" undecided)))
  '(fill-column 100)
- '(flycheck-color-mode-line-face-to-color 'mode-line-buffer-id)
  '(frame-background-mode 'dark)
  '(github-browse-file-show-line-at-point t)
  '(glasses-face 'bold)
@@ -154,26 +154,26 @@
 		  company-go company-shell cond-let consult consult-eglot consult-lsp corfu
 		  crontab-mode csv-mode ctags-update dash-functional diff-hl diminish dired-subtree
 		  doom-modeline doom-themes dracula-theme duplicate-thing ecb edit-server
-		  editorconfig egg eglot eglot-java eldoc emacsql embrace emmet-mode enh-ruby-mode
-		  epc erc exec-path-from-shell faceup fireplace flx-ido flycheck flycheck-pyflakes
-		  flymake fold-dwim fold-this forge format-sql fuzzy ggtags ghub gist
-		  git-timemachine github-browse-file gmail-message-mode go-autocomplete go-direx
-		  go-mode go-projectile go-scratch go-stacktracer gptel gptel-agent grip-mode
-		  groovy-mode haml-mode helm helm-lsp hungry-delete hydra ibuffer-vc idlwave
-		  ido-vertical-mode idomenu iedit imenu-anywhere inf-ruby ioccur jira
-		  js2-highlight-vars js2-refactor json-mode jsonrpc key-chord log4j-mode
-		  lsp-intellij lsp-java lsp-mode lsp-pyright lsp-treemacs lsp-ui lua-mode magit
-		  marginalia markdown-mode markdown-toc mixed-pitch mmm-mode multiple-cursors
-		  nerd-icons-completion nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer olivetti
-		  orderless org org-modern osx-plist pager peg persp-projectile pig-mode
-		  pig-snippets pos-tip prettier-js project projectile projectile-rails protobuf-mode
-		  python python-mode rainbow-delimiters rbenv real-auto-save rg rspec-mode ruby-end
-		  ruby-interpolation ruby-tools rvm scss-mode smart-tab smartparens smex sql-indent
-		  string-inflection tern toggle-quotes track-changes tramp transpose-frame treemacs
-		  treemacs-magit treemacs-nerd-icons treemacs-projectile treesit-auto undo-tree
-		  uniquify use-package valign verilog-mode vertica vertico vterm vundo web-mode
-		  wgrep which-key window-numbering window-tool-bar winum writeroom-mode ws-butler
-		  xml-rpc xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
+		  editorconfig egg eglot eglot-java eldoc emacsql emmet-mode enh-ruby-mode epc erc
+		  exec-path-from-shell expreg faceup fireplace flx-ido flymake fold-dwim fold-this
+		  forge format-sql fuzzy ggtags ghub gist git-timemachine github-browse-file
+		  gmail-message-mode go-autocomplete go-direx go-mode go-projectile go-scratch
+		  go-stacktracer gptel gptel-agent grip-mode groovy-mode haml-mode helm helm-lsp
+		  hungry-delete hydra ibuffer-vc idlwave ido-vertical-mode idomenu iedit
+		  imenu-anywhere inf-ruby ioccur jira js2-highlight-vars js2-refactor json-mode
+		  jsonrpc key-chord log4j-mode lsp-intellij lsp-java lsp-mode lsp-pyright
+		  lsp-treemacs lsp-ui lua-mode magit marginalia markdown-mode markdown-toc
+		  mixed-pitch mmm-mode multiple-cursors nerd-icons-completion nerd-icons-dired
+		  nerd-icons-grep nerd-icons-ibuffer olivetti orderless org org-modern osx-plist
+		  pager peg pig-mode pig-snippets pos-tip prettier-js project projectile
+		  projectile-rails protobuf-mode python python-mode rainbow-delimiters rbenv
+		  real-auto-save reformatter rg rspec-mode ruby-end ruby-interpolation ruby-tools
+		  rvm scss-mode smart-tab smartparens smex sql-indent string-inflection tern
+		  toggle-quotes track-changes tramp transpose-frame treemacs treemacs-magit
+		  treemacs-nerd-icons treemacs-projectile treesit-auto undo-tree uniquify
+		  use-package valign verilog-mode vertica vertico vterm vundo web-mode wgrep
+		  which-key window-numbering window-tool-bar winum writeroom-mode ws-butler xml-rpc
+		  xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
  '(package-vc-selected-packages
    '((agent-shell-macext :url "https://github.com/cxa/agent-shell-macext")
      (agent-shell-manager :url "https://github.com/jethrokuan/agent-shell-manager")))
