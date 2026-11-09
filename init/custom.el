@@ -9,8 +9,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(CUA-mode-inhibit-delay 30000)
- '(CUA-mode-remap-cx-shift-only t)
  '(abbrev-mode t)
  '(ag-arguments
    '("--context" "--ignore-dir=log" "--ignore-dir=vendor" "--all-text" "--smart-case" "--nogroup"
@@ -18,24 +16,13 @@
  '(ai-code-onboarding-seen t)
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
- '(auto-indent-blank-lines-on-move nil)
- '(auto-indent-disabled-modes-list
-   '(compilation-mode conf-windows-mode diff-mode inferior-ess-mode dired-mode eshell-mode
-		      fundamental-mode log-edit-mode makefile-gmake-mode org-mode snippet-mode
-		      texinfo-mode text-mode wl-summary-mode coffee-mode yaml-mode nil))
- '(auto-indent-on-yank-or-paste nil)
- '(auto-indent-untabify-on-visit-file t)
  '(auto-save-timeout 30)
  '(auto-save-visited-file-name nil)
- '(beacon-color "#d54e53")
  '(bookmark-automatically-show-annotations nil)
  '(bookmark-default-file "~/.emacs.local/emacs.bmk")
  '(bookmark-save-flag 0)
  '(bookmark-use-annotations nil)
  '(bs-max-window-height 30)
- '(coffee-tab-width 2)
- '(color-theme-legal-frame-parameters "\\(color\\|mode\\)$")
- '(column-highlight-mode nil)
  '(comment-auto-fill-only-comments t)
  '(completion-ignored-extensions
    '(".o" "~" ".bin" ".lbin" ".so" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".svn/"
@@ -74,16 +61,11 @@
  '(debug-on-error nil)
  '(desktop-path '("~/.emacs.local/"))
  '(desktop-save t)
- '(desktop-save-mode nil)
  '(diary-file (expand-file-name (concat my-emacs-init-dir "/diary")))
  '(directory-abbrev-alist nil)
  '(dired-find-subdir t)
  '(dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$\\|^\\..*")
  '(dired-recursive-deletes 'top)
- '(dired-view-command-alist
-   '(("[.]ps\\'" . "gv -spartan -color") ("[.]pdf\\'" . "xpdf")
-     ("[.]dvi\\'" . "xdvi -sidemargin 0.5 -topmargin 1") ("[.]doc\\'" . "winword")
-     ("[.]ppt\\'" . "powerpnt")))
  '(dired-x-hands-off-my-keys nil)
  '(echo-keystrokes 0.1)
  '(ediff-diff-options "-w")
@@ -91,41 +73,33 @@
  '(ediff-window-setup-function 'ediff-setup-windows-plain)
  '(eshell-directory-name "~/.emacs.local/eshell/")
  '(eshell-prefer-to-shell t nil (eshell))
- '(etags-table-search-up-depth 100)
  '(exec-path-from-shell-check-startup-files nil)
  '(exec-path-from-shell-variables
    '("PATH" "MANPATH" "LANG" "LC_CTYPE" "MY_ENG" "MY_ENV" "MY_EMAIL_PERSONAL" "MY_NAME" "GOPATH"))
- '(file-coding-system-alist
-   '(("\\.elc\\'" emacs-mule . emacs-mule) ("\\(\\`\\|/\\)loaddefs.el\\'" raw-text . raw-text-unix)
-     ("\\.reg\\'" utf-16-le . utf-16-le) ("\\.tar\\'" no-conversion . no-conversion) ("" undecided)))
  '(fill-column 100)
- '(frame-background-mode 'dark)
  '(github-browse-file-show-line-at-point t)
  '(glasses-face 'bold)
  '(glasses-original-separator "")
  '(glasses-separate-parentheses-p nil)
  '(glasses-separator "")
  '(global-auto-revert-mode t)
- '(global-hungry-delete-mode nil)
  '(global-smart-tab-mode t)
  '(global-subword-mode t)
  '(global-visual-line-mode t)
- '(global-window-tool-bar-mode nil)
  '(grep-command "grep -2EInir ")
  '(grep-highlight-matches 'auto-detect)
  '(grep-use-null-device 'auto-detect)
  '(help-window-select t)
  '(hippie-expand-try-functions-list
    '(yas-hippie-try-expand try-complete-file-name-partially try-complete-file-name
-			   try-expand-all-abbrevs try-expand-list try-expand-dabbrev
-			   try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
-			   try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+                           try-expand-all-abbrevs try-expand-list try-expand-dabbrev
+                           try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
+                           try-complete-lisp-symbol-partially try-complete-lisp-symbol))
  '(hs-isearch-open t)
  '(indent-tabs-mode nil)
  '(initial-major-mode 'text-mode)
  '(initial-scratch-message nil)
  '(js-indent-level 2)
- '(js2-basic-offset 2)
  '(large-file-warning-threshold 100000000)
  '(mail-default-directory "~/.emacs.local/")
  '(mail-source-directory "~/.emacs.local/Mail/")
@@ -137,43 +111,25 @@
  '(minibuffer-auto-raise nil)
  '(mouse-scroll-min-lines 2)
  '(mouse-wheel-progressive-speed t)
- '(neo-autorefresh t)
- '(neo-smart-open t)
- '(neo-theme 'nerd)
- '(neo-window-width 40)
  '(nnmail-message-id-cache-file "~/.emacs.local/.nnmail-cache")
  '(nxml-child-indent 4)
  '(nxml-outline-child-indent 4)
  '(nxml-slash-auto-complete-flag t)
  '(package-selected-packages
-   '(abridge-diff ac-etags ace-jump-mode ack add-node-modules-path ag agent-shell agent-shell-macext
-		  agent-shell-manager aggressive-indent ai-code alchemist all-the-icons
-		  all-the-icons-completion all-the-icons-dired all-the-icons-ibuffer
-		  auto-indent-mode bm browse-kill-ring buffer-move bundler cape centered-window
-		  closql coffee-mode color-identifiers-mode color-theme-sanityinc-tomorrow
-		  company-go company-shell cond-let consult consult-eglot consult-lsp corfu
-		  crontab-mode csv-mode ctags-update dash-functional diff-hl diminish dired-subtree
-		  doom-modeline doom-themes dracula-theme duplicate-thing ecb edit-server
-		  editorconfig egg eglot eglot-java eldoc emacsql emmet-mode enh-ruby-mode epc erc
-		  exec-path-from-shell expreg faceup fireplace flx-ido flymake fold-dwim fold-this
-		  forge format-sql fuzzy ggtags ghub gist git-timemachine github-browse-file
-		  gmail-message-mode go-autocomplete go-direx go-mode go-projectile go-scratch
-		  go-stacktracer gptel gptel-agent grip-mode groovy-mode haml-mode helm helm-lsp
-		  hungry-delete hydra ibuffer-vc idlwave ido-vertical-mode idomenu iedit
-		  imenu-anywhere inf-ruby ioccur jira js2-highlight-vars js2-refactor json-mode
-		  jsonrpc key-chord log4j-mode lsp-intellij lsp-java lsp-mode lsp-pyright
-		  lsp-treemacs lsp-ui lua-mode magit marginalia markdown-mode markdown-toc
-		  mixed-pitch mmm-mode multiple-cursors nerd-icons-completion nerd-icons-dired
-		  nerd-icons-grep nerd-icons-ibuffer olivetti orderless org org-modern osx-plist
-		  pager peg pig-mode pig-snippets pos-tip prettier-js project projectile
-		  projectile-rails protobuf-mode python python-mode rainbow-delimiters rbenv
-		  real-auto-save reformatter rg rspec-mode ruby-end ruby-interpolation ruby-tools
-		  rvm scss-mode smart-tab smartparens smex sql-indent string-inflection tern
-		  toggle-quotes track-changes tramp transpose-frame treemacs treemacs-magit
-		  treemacs-nerd-icons treemacs-projectile treesit-auto undo-tree uniquify
-		  use-package valign verilog-mode vertica vertico vterm vundo web-mode wgrep
-		  which-key window-numbering window-tool-bar winum writeroom-mode ws-butler xml-rpc
-		  xref-js2 yafolding yaml-mode yasnippet yasnippet-snippets))
+   '(ack add-node-modules-path ag agent-shell agent-shell-macext agent-shell-manager aggressive-indent
+         ai-code bm buffer-move cape closql cond-let consult consult-eglot corfu
+         crontab-mode csv-mode diff-hl diminish dired-subtree doom-modeline doom-themes
+         duplicate-thing editorconfig eglot-java emacsql emmet-mode exec-path-from-shell expreg
+         flymake forge format-sql ghub gist git-timemachine github-browse-file go-mode gptel
+         gptel-agent grip-mode groovy-mode hydra ibuffer-vc iedit imenu-anywhere inf-ruby jira
+         key-chord log4j-mode lua-mode magit marginalia markdown-mode markdown-toc mixed-pitch
+         multiple-cursors nerd-icons-completion nerd-icons-dired nerd-icons-grep nerd-icons-ibuffer
+         olivetti orderless org org-modern pager peg projectile projectile-rails protobuf-mode
+         rainbow-delimiters reformatter rg rspec-mode ruby-end ruby-interpolation rvm smart-tab
+         sql-indent string-inflection toggle-quotes transpose-frame treemacs treemacs-magit
+         treemacs-nerd-icons treemacs-projectile valign verilog-mode vertico
+         vterm vundo web-mode wgrep winum writeroom-mode ws-butler yaml-mode yasnippet
+         yasnippet-snippets))
  '(package-vc-selected-packages
    '((agent-shell-macext :url "https://github.com/cxa/agent-shell-macext")
      (agent-shell-manager :url "https://github.com/jethrokuan/agent-shell-manager")))
@@ -186,8 +142,6 @@
  '(save-abbrevs 'silently)
  '(save-place-file "~/.emacs.local/emacs-places")
  '(save-place-mode t nil (saveplace))
- '(semantic-inhibit-functions '(my-semantic-dont-parse))
- '(semanticdb-default-save-directory "~/.emacs.local/semantic.cache")
  '(shell-file-name "/bin/bash")
  '(show-paren-mode t)
  '(show-paren-style 'parenthesis)
@@ -196,7 +150,6 @@
  '(size-indication-mode t)
  '(smart-tab-disabled-major-modes '(org-mode term-mode eshell-mode Custom-mode))
  '(smart-tab-using-hippie-expand t)
- '(solaire-global-mode nil)
  '(sql-connection-alist
    '(("Automation QA" (sql-product 'mysql) (sql-user "jorussell") (sql-server "vitess.hubteamqa.com")
       (sql-database "Automation"))
@@ -204,32 +157,20 @@
       (sql-server "vitess.hubteam.com") (sql-database "AutomationPlatform"))
      ("Automation Platform QA" (sql-product 'mysql) (sql-user "jorussell")
       (sql-server "vitess.hubteamqa.com") (sql-database "AutomationPlatform"))))
- '(stack-trace-on-error nil t)
  '(tags-revert-without-query t)
- '(tail-hide-delay 0)
- '(tail-max-size 0)
- '(tail-volatile nil)
- '(todo-file-do "~/.emacs.local/todo-do")
- '(todo-file-done "~/.emacs.local/todo-done")
- '(todo-file-top "~/.emacs.local/todo-top")
  '(vc-cvs-diff-switches "-up")
  '(vc-diff-switches "-pu")
  '(which-function-mode t)
- '(whitespace-check-indent-whitespace nil)
- '(whitespace-global-mode nil nil (whitespace))
  '(whitespace-line-column 150)
  '(whitespace-space-regexp "\\(^ +\\| +$\\)")
  '(whitespace-style
    '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab
-	  tab-mark)))
+          tab-mark)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(col-highlight ((t (:background "gray15"))))
- '(js2-highlight-vars-face ((t (:underline t))))
- '(js2-highlight-vars-second-face ((t (:underline (:color foreground-color :style wave)))))
  '(nxml-attribute-colon-face ((t (:inherit nxml-name-face :foreground "green"))))
  '(nxml-attribute-local-name-face ((t (:inherit nxml-name-face :foreground "limegreen"))))
  '(nxml-attribute-prefix-face ((t (:inherit nxml-name-face :foreground "green"))))
@@ -247,7 +188,6 @@
  '(nxml-namespace-attribute-value-face ((t (:inherit nxml-attribute-value-face :foreground "gold"))))
  '(nxml-namespace-attribute-xmlns-face ((t (:inherit nxml-name-face :foreground "green"))))
  '(nxml-tag-slash-face ((t (:inherit nxml-name-face))))
- '(semantic-decoration-on-private-members-face ((((class color) (background light)) nil)))
  '(underline ((t (:underline nil)))))
 
 

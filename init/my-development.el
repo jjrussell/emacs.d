@@ -1,3 +1,4 @@
+;;; my-development.el --- Programming language modes and dev tools  -*- lexical-binding: t; -*-
 ;; This file contains modes for editing different programming languages
 ;; that do not come standard with emacs.
 
@@ -56,26 +57,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; lsp-mode (DISABLED — replaced by eglot; see block below)
-;; Original config from: https://raw.githubusercontent.com/neppramod/java_emacs/master/emacs-configuration.org
+;; Tree-sitter
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; treesit-auto: manages tree-sitter grammar installation and mode remapping
-;; Automatically remaps e.g. ruby-mode -> ruby-ts-mode, python-mode -> python-ts-mode etc.
-;; treesit-auto is disabled due to a performance bug: it calls treesit-language-available-p
-;; for every language on every file open, causing a 2-3 second freeze.
-;; https://github.com/renzmann/treesit-auto/issues/84
-;; If that issue is resolved, re-enable this and remove the manual remap below:
-;;
-;; (use-package treesit-auto
-;;   :ensure t
-;;   :custom
-;;   (treesit-auto-install 'prompt)
-;;   :config
-;;   (global-treesit-auto-mode))
+;; treesit-auto was removed due to a performance bug: it calls
+;; treesit-language-available-p for every language on every file open,
+;; causing a 2-3 second freeze. https://github.com/renzmann/treesit-auto/issues/84
 
 ;; Grammar sources for treesit-install-language-grammar.
-;; treesit-auto populated this automatically; we do it manually here.
 ;; Add entries here alongside any new candidates below.
 (setq treesit-language-source-alist
       '((bash       . ("https://github.com/tree-sitter/tree-sitter-bash"))
@@ -155,223 +144,15 @@
   (add-hook 'completion-at-point-functions #'my/cape-file-no-minibuffer)
   (add-hook 'completion-at-point-functions #'my/cape-keyword-no-minibuffer))
 
-(use-package yasnippet :config (yas-global-mode))
-(use-package yasnippet-snippets :ensure t)
+;; Loaded after 2s of idle time instead of blocking startup.
+(use-package yasnippet
+  :defer 2
+  :config (yas-global-mode))
+;; Its autoloads already hook snippet setup onto yasnippet loading.
+(use-package yasnippet-snippets :ensure t :defer t)
 ;; Diagnostics: flymake only (built-in). Eglot feeds flymake natively for all
 ;; LSP buffers (java/python/js/ts); non-LSP modes enable flymake-mode via their
 ;; hooks below. Flycheck was removed — it was redundant with eglot→flymake.
-(when nil  ; ─── DISABLED: lsp-mode (replaced by eglot below) ───────────────
-
-(use-package lsp-treemacs
-  :after (lsp-mode treemacs)
-  :ensure t
-  :commands lsp-treemacs-errors-list
-  :bind (:map lsp-mode-map
-              ("M-9" . lsp-treemacs-errors-list)))
-
-(use-package lsp-ui
-  :ensure t
-  :after (lsp-mode)
-  :bind (:map lsp-ui-mode-map
-              ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
-              ([remap xref-find-references] . lsp-ui-peek-find-references))
-  :init (setq lsp-ui-doc-enable nil
-              lsp-ui-doc-delay 1.5
-	      lsp-ui-doc-position 'bottom
-              lsp-ui-doc-max-width 100
-              lsp-ui-sideline-enable nil
-              lsp-ui-peek-list-width 80)
-  :config
-  (defun my-lsp-ui-peek--truncate-right (len s)
-    "Truncate S from the left so the rightmost LEN chars are visible."
-    (if (> (string-width s) len)
-        (concat ".." (substring s (- (length s) (max (- len 2) 0))))
-      s))
-  (advice-add 'lsp-ui-peek--truncate :override #'my-lsp-ui-peek--truncate-right))
-(use-package consult-lsp
-  :ensure t
-  :after (lsp-mode consult)
-  :bind (:map lsp-mode-map
-              ([remap xref-find-apropos] . consult-lsp-symbols)))
-(defun my/lsp-java-per-project-workspace (orig-fn &rest args)
-  "Advise `lsp-java--ls-command' to use per-project workspace dirs.
-Each project root gets its own JDTLS data directory under
-jdtls-workspaces/, so worktrees and separate repos never
-cross-pollinate their indexes.  The workspace name is derived
-from the path relative to ~ with / replaced by !, e.g.
-  ~/src/WorkflowMigration  → src!WorkflowMigration
-  ~/src/feature/WFM        → src!feature!WFM"
-  (let* ((root (or (lsp-workspace-root)
-                   (and (bound-and-true-p projectile-mode)
-                        (projectile-project-root))
-                   (locate-dominating-file default-directory ".git")))
-         (name (when root
-                 (replace-regexp-in-string
-                  "/" "!"
-                  (file-relative-name (directory-file-name root) "~"))))
-         (lsp-java-workspace-dir
-          (if name
-              (expand-file-name name
-                                (expand-file-name "jdtls-workspaces"
-                                                  user-emacs-directory))
-            lsp-java-workspace-dir))
-         (lsp-java-workspace-cache-dir
-          (expand-file-name ".cache/" lsp-java-workspace-dir)))
-    (message "[JDTLS] per-project workspace: %s" lsp-java-workspace-dir)
-    (apply orig-fn args)))
-
-(use-package lsp-mode
-  :ensure t
-  :hook (
-	 (lsp-mode . lsp-enable-which-key-integration)
-	 (java-mode . #'lsp-deferred)
-	 (java-ts-mode . #'lsp-deferred)
-	 )
-  :init (setq
-	 lsp-keymap-prefix "C-c l"
-	 lsp-enable-file-watchers nil
-	 lsp-enable-imenu t
-	 lsp-progress-via-spinner t
-	 lsp-headerline-breadcrumb-enable nil
-	 read-process-output-max (* 3 1024 1024) ; 3 MB — JDTLS sends large payloads
-	 lsp-completion-provider :capf
-	 lsp-idle-delay 0.500
-	 lsp-response-timeout 120
-	 lsp-keep-workspace-alive nil
-	 lsp-log-io nil
-	 lsp-lens-enable nil
-	 lsp-signature-auto-activate nil
-	 lsp-modeline-code-actions-enable nil
-	 lsp-modeline-diagnostics-enable nil
-	 ;; Let HSJF own all formatting. Without these, JDTLS reformats
-	 ;; as you type (on-type-formatting) and on every newline
-	 ;; (indentation), overriding hsjf-format-on-save-mode.
-	 lsp-enable-on-type-formatting nil
-	 lsp-enable-indentation nil
-	 lsp-enable-symbol-highlighting nil
-	 lsp-auto-guess-root nil          ; don't merge roots into mega-workspaces
-	 )
-  :config
-  (setq lsp-intelephense-multi-root nil) ; don't scan unnecessary projects
-  (with-eval-after-load 'lsp-intelephense
-    (setf (lsp--client-multi-root (gethash 'iph lsp-clients)) nil))
-  )
-(defun my/lsp-java-clean-workspaces (&optional days)
-  "Delete JDTLS workspace directories not modified in DAYS (default 30).
-Also available interactively to pick which workspaces to remove."
-  (interactive)
-  (let* ((ws-root (expand-file-name "jdtls-workspaces" user-emacs-directory))
-         (days (or days 30))
-         (cutoff (time-subtract (current-time) (days-to-time days)))
-         (dirs (and (file-directory-p ws-root)
-                    (directory-files ws-root t "^[^.]"))))
-    (if (not dirs)
-        (when (called-interactively-p 'any) (message "No JDTLS workspaces found."))
-      (if (called-interactively-p 'any)
-          (let* ((annotated (mapcar (lambda (d)
-                                      (let ((size (string-trim (shell-command-to-string
-                                                                 (format "du -sh %s | cut -f1" (shell-quote-argument d)))))
-                                            (age (format-time-string "%Y-%m-%d" (file-attribute-modification-time (file-attributes d)))))
-                                        (cons (format "%s  (%s, last modified %s)" (file-name-nondirectory d) size age) d)))
-                                    dirs))
-                 (selected (completing-read-multiple "Delete workspaces (comma-separated): " annotated)))
-            (dolist (s selected)
-              (when-let* ((path (cdr (assoc s annotated))))
-                (delete-directory path t)
-                (message "Deleted %s" path))))
-        (dolist (d dirs)
-          (when (time-less-p (file-attribute-modification-time (file-attributes d)) cutoff)
-            (delete-directory d t)
-            (message "Auto-cleaned stale JDTLS workspace: %s" (file-name-nondirectory d))))))))
-
-(run-with-idle-timer 10 nil #'my/lsp-java-clean-workspaces 30)
-
-(defun my/lsp-java-nuke-workspace (&optional project)
-  "Kill JDTLS servers and delete workspace indexes.
-With no prefix arg, nukes ALL per-project workspaces.
-With prefix arg, prompts to select which project workspaces to delete."
-  (interactive "P")
-  (let ((jdtls-dir (expand-file-name "jdtls-workspaces" user-emacs-directory)))
-    ;; Shut down all LSP workspaces gracefully
-    (when (fboundp 'lsp-workspace-shutdown)
-      (dolist (workspace (lsp-workspaces))
-        (ignore-errors (lsp-workspace-shutdown workspace))))
-    ;; Force-kill any lingering jdtls processes
-    (shell-command "pkill -f 'eclipse.jdt.ls' 2>/dev/null")
-    (if (and project (file-directory-p jdtls-dir))
-        ;; Selective: pick which project workspaces to nuke
-        (let* ((dirs (directory-files jdtls-dir t "^[^.]"))
-               (names (mapcar #'file-name-nondirectory dirs))
-               (selected (completing-read-multiple "Nuke workspaces: " names)))
-          (dolist (name selected)
-            (let ((path (expand-file-name name jdtls-dir)))
-              (when (file-directory-p path)
-                (delete-directory path t)
-                (message "Deleted workspace: %s" name)))))
-      ;; Nuke everything
-      (when (file-directory-p jdtls-dir)
-        (delete-directory jdtls-dir t)
-        (message "Deleted all JDTLS workspaces"))
-      ;; Also clean legacy shared workspace if it still exists
-      (let ((legacy (expand-file-name "workspace" user-emacs-directory)))
-        (when (file-directory-p legacy)
-          (delete-directory legacy t)
-          (message "Deleted legacy shared workspace"))))
-    (message "Done. Open a Java file to re-index.")))
-
-(use-package lsp-java
-  :ensure t
-  :config
-  (setq lsp-java-vmargs
-        '("-XX:+UseG1GC"
-          "-XX:+UseStringDeduplication"
-          "-XX:GCTimeRatio=4"
-          "-XX:AdaptiveSizePolicyWeight=90"
-          "-Dsun.zip.disableMemoryMapping=true"
-          "-Xmx2G"
-          "-Xms1G"
-          "-Xss4m")
-        ;; Autobuild is the #1 performance killer — it rebuilds ALL indexed
-        ;; projects on every file change. With 20+ repos, this is devastating.
-        lsp-java-autobuild-enabled nil
-        lsp-java-max-concurrent-builds 1
-        lsp-java-completion-max-results 20
-        ;; Skip directories that bloat the index without adding navigation value
-        lsp-java-import-exclusions ["**/node_modules/**"
-                                    "**/build/**"
-                                    "**/.gradle/**"
-                                    "**/bin/**"
-                                    "**/.metadata/**"
-                                    "**/archetype-resources/**"
-                                    "**/META-INF/maven/**"])
-  (add-to-list 'auto-mode-alist '("\\.class)\\'" . java-ts-mode))
-
-  ;; ── Force jdtls to single-root mode ──────────────────────────
-  ;; lsp--client is a cl-defstruct; byte-compiled lsp-mode inlines
-  ;; accessor reads as (aref client N).  Neither setf nor advice on
-  ;; lsp--client-multi-root can intercept those.  We must aset the
-  ;; actual struct slot to nil so every code path reads nil.
-  ;;
-  ;; Use cl-struct-slot-info for a dynamic index lookup so this
-  ;; survives lsp-mode adding/removing slots in future versions.
-  (when-let ((client (gethash 'jdtls lsp-clients)))
-    (let ((idx 0))
-      (dolist (slot-desc (cl-struct-slot-info 'lsp--client))
-        (when (eq (car slot-desc) 'multi-root)
-          (aset client idx nil)
-          (message "[JDTLS] disabled multi-root on jdtls client (slot %d)" idx))
-        (setq idx (1+ idx)))))
-
-  ;; Belt-and-suspenders: also advise lsp--find-multiroot-workspace
-  ;; (a regular defun, always dispatched) to block server reuse for jdtls.
-  (defun my/jdtls-single-root (orig-fn session client project-root)
-    "Prevent jdtls from reusing an existing server for a new project root."
-    (unless (eq (lsp--client-server-id client) 'jdtls)
-      (funcall orig-fn session client project-root)))
-  (advice-add 'lsp--find-multiroot-workspace :around #'my/jdtls-single-root)
-  (advice-add 'lsp-java--ls-command :around #'my/lsp-java-per-project-workspace))
-
-) ; ─── END DISABLED lsp-mode ─────────────────────────────────────────────────
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -675,13 +456,6 @@ mouse-3: LSP server control menu"
   ;; emacs ruby mode defaut is global but (default) is the default in rvm now
   (setq rvm--gemset-default "(default)")
 
-  (defadvice rspec-compile (around rspec-compile-around)
-    "Use BASH shell for running the specs because of ZSH issues."
-    (let ((shell-file-name "/bin/bash"))
-      ad-do-it))
-
-  (ad-activate 'rspec-compile)
-
   ;; bundle exec for some reason doesn't pick up the same bundle as bundle installed on the
   ;; command line, however modern versions of rvm just pick it up without the bundle exec
   ;; command so leave it off and it all works fine. 
@@ -721,6 +495,12 @@ mouse-3: LSP server control menu"
   )
 
 
+
+(defun my/rspec-compile-with-bash (orig-fn &rest args)
+  "Use BASH shell for running the specs because of ZSH issues."
+  (let ((shell-file-name "/bin/bash"))
+    (apply orig-fn args)))
+(advice-add 'rspec-compile :around #'my/rspec-compile-with-bash)
 
 (add-hook 'projectile-mode-hook 'projectile-rails-on)
 (add-hook 'ruby-mode-hook 'my-ruby-mode-hook)
@@ -837,10 +617,7 @@ Dependent gems:
                    (setenv "PATH" (mapconcat 'identity exec-path ":"))))
   (add-hook hook #'eglot-ensure))
 
-;; lsp-pyright disabled; eglot handles pyright directly (install: pip install pyright)
-;; (use-package lsp-pyright
-;;   :ensure t
-;;   :hook (python-ts-mode . lsp-deferred))
+;; eglot handles pyright directly (install: pip install pyright)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -901,7 +678,7 @@ Dependent gems:
 (defun my-nxml-mode-hook ()
   (set-indent)
   (define-key nxml-mode-map [(control m)] 'newline-and-indent))
-(rng-nxml-mode-init)
+;; nxml-mode calls rng-nxml-mode-init itself; calling it here loaded nxml/rng at startup.
 (add-to-list 'auto-mode-alist '("\\.xml" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.xsl" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.svg" . nxml-mode))

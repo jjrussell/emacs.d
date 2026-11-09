@@ -75,31 +75,6 @@
   ("q"  nil "cancel" :color blue :column "Hydra") )
 (global-set-key (kbd "C-x d") 'hydra-mine/body)
 
-(when nil  ; ─── DISABLED: hydra-lsp (replaced by hydra-eglot below) ──────────
-(defhydra hydra-lsp (:exit t :hint nil)
-  "
- Buffer^^               Server^^                   Symbol
--------------------------------------------------------------------------------------
- [_f_] format           [_M-r_] restart            [_d_] declaration  [_i_] implementation  [_o_] documentation
- [_m_] imenu            [_S_]   shutdown           [_D_] definition   [_t_] type            [_r_] rename
- [_x_] execute action   [_M-s_] describe session   [_R_] references   [_s_] signature"
-  ("d" lsp-find-declaration)
-  ("D" lsp-ui-peek-find-definitions)
-  ("R" lsp-ui-peek-find-references)
-  ("i" lsp-ui-peek-find-implementation)
-  ("t" lsp-find-type-definition)
-  ("s" lsp-signature-help)
-  ("o" lsp-describe-thing-at-point)
-  ("r" lsp-rename)
-
-  ("f" lsp-format-buffer)
-  ("m" lsp-ui-imenu)
-  ("x" lsp-execute-code-action)
-
-  ("M-s" lsp-describe-session)
-  ("M-r" lsp-workspace-restart)
-  ("S" lsp-workspace-shutdown))
-) ; ─── END DISABLED hydra-lsp ────────────────────────────────────────────────
 
 (defhydra hydra-eglot (:exit t :hint nil)
   "
@@ -165,16 +140,24 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 
 
 
+;; Deferred: loading vterm eagerly pulls in tramp, which shells out to git
+;; at startup ("Waiting for git...").
 (use-package vterm
-  :ensure t)
+  :ensure t
+  :defer t)
 
+;; Optional: Turn on auto-revert buffer, so that the AI code change automatically appears in the buffer
+(global-auto-revert-mode 1)
+(setq auto-revert-interval 1) ;; set to 1 second for faster update
+
+;; Deferred until first use of C-c a: ai-code eagerly requires magit, org and
+;; flycheck, which was ~1.5s of startup.
 (use-package ai-code
   ;; :straight (:host github :repo "tninja/ai-code-interface.el") ;; if you want to use straight to install, no need to have MELPA setting above
+  :bind ("C-c a" . ai-code-menu)
   :config
   ;; use codex as backend, other options are 'claude-code, 'gemini, 'github-copilot-cli, 'opencode, 'grok, 'cursor, 'kiro, 'codebuddy, 'aider, 'claude-code-ide, 'claude-code-el
   (ai-code-set-backend 'claude-code)
-  ;; Enable global keybinding for the main menu
-  (global-set-key (kbd "C-c a") #'ai-code-menu)
   ;; Optional: Use eat if you prefer, by default it is vterm
   ;; (setq ai-code-backends-infra-terminal-backend 'eat) ;; the way to config all native supported CLI. for external backend such as claude-code-ide.el and claude-code.el, please check their config
   ;; Optional: Enable @ file completion in comments and AI sessions
@@ -183,9 +166,6 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
   (setq ai-code-auto-test-type 'test-after-change)
   ;; Optional: In AI session buffers, SPC in Evil normal state triggers the prompt-enter UI
   (with-eval-after-load 'evil (ai-code-backends-infra-evil-setup))
-  ;; Optional: Turn on auto-revert buffer, so that the AI code change automatically appears in the buffer
-  (global-auto-revert-mode 1)
-  (setq auto-revert-interval 1) ;; set to 1 second for faster update
   ;; (global-set-key (kbd "C-c a C") #'ai-code-toggle-filepath-completion)
   ;; Optional: Set up Magit integration for AI commands in Magit popups
   (with-eval-after-load 'magit
@@ -193,6 +173,7 @@ _s-f_: file            _a_: ag                _i_: Ibuffer           _c_: cache 
 
 (use-package org
   :ensure nil ; org is built-in, no need to install
+  :defer t ; a lambda :hook doesn't imply deferral, so org was loading at startup
   :hook
   (org-mode . (lambda ()
                 ;; Org mode parser requires a tab-width of 8
@@ -645,18 +626,6 @@ toggles and would race with this setup)."
   :config
   (which-key-mode 1))
 
-;; Fix ido-ubiquitous for newer packages
-;; http://whattheemacsd.com/setup-ido.el-01.html
-;; (defmacro ido-ubiquitous-use-new-completing-read (cmd package)
-;;   `(eval-after-load ,package
-;;      '(defadvice ,cmd (around ido-ubiquitous-new activate)
-;;         (let ((ido-ubiquitous-enable-compatibility nil))
-;;           ad-do-it))))
-
-;; (ido-ubiquitous-use-new-completing-read webjump 'webjump)
-;; (ido-ubiquitous-use-new-completing-read yas/expand 'yasnippet)
-;; (ido-ubiquitous-use-new-completing-read yas/visit-snippet-file 'yasnippet)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Projectile and project functions
@@ -692,10 +661,10 @@ toggles and would race with this setup)."
   ;; When first entering a project (fresh tab, no saved session), land in
   ;; dired -- matching the old `projectile-switch-project-action'.
   (projectile-session-default-action 'projectile-dired)
-   (projectile-session-restore-on-switch t)
-   (projectile-session-autosave t)
-   :config
-   (projectile-session-mode +1))
+  (projectile-session-restore-on-switch t)
+  (projectile-session-auto-save t)
+  :config
+  (projectile-session-mode +1))
 
 ;; Browser-style navigation for the projectile-session tabs.
 ;; Ctrl-TAB / Ctrl-Shift-TAB (next / previous tab) are built into tab-bar and
@@ -762,6 +731,7 @@ at point."
 ;; live viewing of markdown preview. Requires brew install grip
 (use-package grip-mode
   :ensure t
+  :defer t
   :config
   (setq grip-preview-use-webkit nil))
 
@@ -901,7 +871,7 @@ at point."
   :config
   (key-chord-mode 1)
   (key-chord-define-global ",." "<>\C-b")
-  (key-chord-define-global "xx" 'smex)
+  (key-chord-define-global "xx" 'execute-extended-command)
   (key-chord-define-global "hh" 'switch-to-previous-buffer))
 ;; What other ones would be useful?
 
@@ -1015,8 +985,9 @@ at point."
 (defvar my/worktree-root "~/src/wt/"
   "Root directory for centralized worktrees.")
 
+;; Deferred until first use (C-c s, C-c p SPC, etc.); was ~0.4s at startup.
 (use-package agent-shell
-  :demand t
+  :defer t
   :bind
   ("C-c s" . agent-shell-help-menu)
   (:map projectile-command-map
@@ -1033,23 +1004,26 @@ at point."
   (agent-shell-confirm-interrupt nil)
   (agent-shell-prefer-session-resume nil)
   (agent-shell-preferred-agent-config 'claude-code)
-  (agent-shell-google-authentication (agent-shell-google-make-authentication :login t))
-  (agent-shell-openai-authentication
-   (agent-shell-openai-make-authentication
-    :codex-api-key (lambda ()
-                     (string-trim
-                      (shell-command-to-string "hsauthctl idp get-token")))))
   (agent-shell-context-sources '(files region error))
-  (agent-shell-agent-configs
-   (list (agent-shell-anthropic-make-claude-code-config)
-         (agent-shell-openai-make-codex-config)
-         (agent-shell-google-make-gemini-config)))
   (agent-shell-mcp-servers '(((name . "linear")
                               (type . "http")
                               (headers . [])
                               (url . "https://mcp.linear.app/mcp"))))
 
   :config
+  ;; These call agent-shell functions that aren't autoloaded, so they must be
+  ;; set after the package loads rather than in :custom.
+  (setopt agent-shell-google-authentication (agent-shell-google-make-authentication :login t)
+          agent-shell-openai-authentication
+          (agent-shell-openai-make-authentication
+           :codex-api-key (lambda ()
+                            (string-trim
+                             (shell-command-to-string "hsauthctl idp get-token"))))
+          agent-shell-agent-configs
+          (list (agent-shell-anthropic-make-claude-code-config)
+                (agent-shell-openai-make-codex-config)
+                (agent-shell-google-make-gemini-config)))
+
   (defun my/agent-shell-dwim (&optional arg)
     "Smart agent-shell dispatcher.
 
@@ -1222,12 +1196,12 @@ visible."
 ;; dispatch-task: pick or create a worktree, then start an agent-shell in it
 (defun my/worktree-repo-name ()
   "Return the basename of the current repo's toplevel directory."
-  (when-let ((root (magit-toplevel)))
+  (when-let* ((root (magit-toplevel)))
     (file-name-nondirectory (directory-file-name root))))
 
 (defun my/worktree-list-external ()
   "Return alist of (PATH . BRANCH) for worktrees under `my/worktree-root' for the current repo."
-  (when-let ((repo (my/worktree-repo-name)))
+  (when-let* ((repo (my/worktree-repo-name)))
     (let ((prefix (expand-file-name (file-name-concat my/worktree-root repo))))
       (seq-filter
        (lambda (entry)

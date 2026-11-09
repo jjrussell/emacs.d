@@ -16,6 +16,12 @@
 (setq native-comp-async-report-warnings-errors nil)
 (setq warning-minimum-level :error)
 
+;; Activate packages from a single precomputed autoloads file instead of
+;; scanning every elpa/ directory (~1s -> ~0.05s). package.el regenerates it
+;; automatically on install/delete; run `M-x package-quickstart-refresh' if
+;; packages are ever changed outside package.el.
+(setq package-quickstart t)
+
 ;; Never paint a native tool-bar on any frame (initial, subsequent, or
 ;; emacsclient). Pinning this in default-frame-alist before the first frame is
 ;; created suppresses the startup flash and the macOS titlebar toolbar capsule,
